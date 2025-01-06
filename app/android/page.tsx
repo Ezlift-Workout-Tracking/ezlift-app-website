@@ -7,7 +7,7 @@ import { useState } from "react";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Smartphone } from "lucide-react";
 
-const DISCORD_WEBHOOK = process.env.NEXT_PUBLIC_DISCORD_WEBHOOK_URL as string;
+const DISCORD_WEBHOOK = process.env.NEXT_PUBLIC_DISCORD_WEBHOOK_URL || "https://discord.com/api/webhooks/1323012306061234278/iJmoa7EV4avG6xzFMv9eHQZCNDd_Zr4-P7eotgr8iJLoZPKaPSb7vcTtr1IFOwDTyZNX";
 
 export default function AndroidWaitlist() {
   const [email, setEmail] = useState("");

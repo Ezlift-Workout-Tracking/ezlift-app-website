@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-const DISCORD_WEBHOOK = process.env.NEXT_PUBLIC_DISCORD_WEBHOOK_URL as string;
+const DISCORD_WEBHOOK = process.env.NEXT_PUBLIC_DISCORD_WEBHOOK_URL || "https://discord.com/api/webhooks/1323012306061234278/iJmoa7EV4avG6xzFMv9eHQZCNDd_Zr4-P7eotgr8iJLoZPKaPSb7vcTtr1IFOwDTyZNX";
 
 export function ContactForm() {
   const [formData, setFormData] = useState({
