@@ -61,32 +61,32 @@ export function Hero() {
               Track workouts, analyze progress, and achieve your fitness goals with EZLift - the smart workout companion that adapts to your needs.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Link 
+                <Link 
                 href={BRAND.links.appStore}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transform transition-transform hover:scale-105 duration-300"
                 aria-label="Download on the App Store"
-              >
+                >
                 <Image
                   {...HERO_CONFIG.storeBadges}
                   src="/app-store-badge.svg"
                   alt={HERO_CONFIG.storeBadges.alt}
-                  className="h-[52px] w-[156px]"
+                  className="h-[64px] w-[192px]"
                 />
-              </Link>
-              <Link
+                </Link>
+                <Link
                 href="/android"
                 className="transform transition-transform hover:scale-105 duration-300"
                 aria-label="Get it on Google Play"
-              >
+                >
                 <Image
                   {...HERO_CONFIG.storeBadges}
                   src="/play-store-badge.svg"
                   alt={HERO_CONFIG.storeBadges.alt}
-                  className="h-[52px] w-[156px]"
+                  className="h-[64px] w-[192px]"
                 />
-              </Link>
+                </Link>
             </div>
           </FadeIn>
         </div>

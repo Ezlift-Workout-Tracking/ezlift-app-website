@@ -4,16 +4,9 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { TeamMemberCard } from "@/components/cards/TeamMemberCard";
-import { Button } from "@/components/ui/button";
 import { teamMembers } from "@/lib/data/team";
 
 export default function About() {
-  const scrollToTeam = () => {
-    const teamSection = document.getElementById('team');
-    if (teamSection) {
-      teamSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   return (
     <>
@@ -23,14 +16,11 @@ export default function About() {
           <FadeIn>
             <div className="max-w-3xl mx-auto text-center">
               <h1 className="text-4xl font-bold mb-6">Meet our team</h1>
-              <p className="text-lg text-muted-foreground mb-8">
+              <p className="text-lg text-muted-foreground">
                 We are a small team based in Berlin, Germany. Our team is made up of expert Lifters 
                 and fitness enthusiasts who decided to build an app to solve the weightlifting 
                 tracking once and for all.
               </p>
-              <Button onClick={scrollToTeam} size="lg">
-                Meet our team
-              </Button>
             </div>
           </FadeIn>
         </div>

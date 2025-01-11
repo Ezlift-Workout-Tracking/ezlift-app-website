@@ -32,8 +32,8 @@ export function Testimonials() {
         <ScrollAnimation delay={0}>
           <div className="flex items-center justify-center gap-8 mb-12 flex-wrap">
             <Star className="h-6 w-6 text-yellow-500" />
-            <span className="text-2xl font-bold">4.9/5 Average Rating</span>
-            <span className="text-muted-foreground">(2000+ Reviews)</span>
+            <span className="text-2xl font-bold">5/5 Rating</span>
+            {/* <span className="text-muted-foreground">(2000+ Reviews)</span> */}
           </div>
         </ScrollAnimation>
         <div className="grid md:grid-cols-3 gap-8">
