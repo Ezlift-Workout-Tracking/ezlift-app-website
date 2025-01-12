@@ -13,7 +13,6 @@ export function Header() {
   const menuItems = [
     { href: "#features", label: "Features" },
     { href: "#pricing", label: "Pricing" },
-    { href: "#testimonials", label: "Testimonials" },
     { href: "/blog", label: "Blog" },
   ];
 
