@@ -22,11 +22,19 @@ export default function Blog() {
           </FadeIn>
 
           <div className="max-w-4xl mx-auto space-y-8">
-            {blogPosts.map((post, index) => (
+            {blogPosts.length > 0 ? (
+              blogPosts.map((post, index) => (
               <FadeIn key={post.slug} delay={index * 100}>
                 <BlogCard post={post} />
               </FadeIn>
-            ))}
+              ))
+            ) : (
+              <FadeIn>
+              <p className="text-center text-lg text-muted-foreground">
+                No articles available at the moment. Please check back later.
+              </p>
+              </FadeIn>
+            )}
           </div>
         </div>
       </main>

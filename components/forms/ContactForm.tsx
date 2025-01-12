@@ -1,4 +1,3 @@
-// components/forms/ContactForm.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -225,7 +224,7 @@ export function ContactForm() {
       };
 
       // Submit the form
-      const response = await fetch("/api/contact", {
+      const response = await fetch('/.netlify/functions/api/contact',{
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
