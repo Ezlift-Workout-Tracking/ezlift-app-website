@@ -44,7 +44,7 @@ export default function AndroidWaitlist() {
 
   return (
     <>
-      <Header />
+      <Header hideMenu />
       <main className="min-h-screen pt-24 bg-black">
         <div className="container px-4 mx-auto">
           <FadeIn className="max-w-2xl mx-auto text-center">

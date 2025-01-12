@@ -25,7 +25,7 @@ export default async function BlogPost({ params, searchParams }: Props) {
 
   return (
     <>
-      <Header />
+      <Header hideMenu />
       <main className="flex-1 py-24">
         <div className="container px-4 mx-auto">
           <BlogPostContent post={post} />

@@ -7,7 +7,7 @@ import { Logo } from "@/components/brand/Logo";
 import { Menu } from "lucide-react";
 import { useState } from "react";
 
-export function Header() {
+export function Header({ hideMenu = false }: { hideMenu?: boolean }) {
   const [open, setOpen] = useState(false);
 
   const menuItems = [
@@ -22,38 +22,49 @@ export function Header() {
         <Logo />
         
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
-          {menuItems.map((item) => (
-            <Button key={item.href} variant="ghost" asChild>
-              <Link href={item.href}>{item.label}</Link>
-            </Button>
-          ))}
-        </nav>
+        {!hideMenu && (
+          <nav className="hidden md:flex items-center gap-6">
+            {menuItems.map((item) => (
+              <Button key={item.href} variant="ghost" asChild>
+                <Link href={item.href}>{item.label}</Link>
+              </Button>
+            ))}
+          </nav>
+        )}
 
         {/* Mobile Navigation */}
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-            <nav className="flex flex-col gap-4 mt-8">
-              {menuItems.map((item) => (
-                <Button
-                  key={item.href}
-                  variant="ghost"
-                  className="justify-start"
-                  asChild
-                  onClick={() => setOpen(false)}
-                >
-                  <Link href={item.href}>{item.label}</Link>
-                </Button>
-              ))}
-            </nav>
-          </SheetContent>
-        </Sheet>
+        {!hideMenu && (
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <nav className="flex flex-col gap-4 mt-8">
+                {menuItems.map((item) => (
+                  <Button
+                    key={item.href}
+                    variant="ghost"
+                    className="justify-start"
+                    asChild
+                    onClick={() => setOpen(false)}
+                  >
+                    <Link href={item.href}>{item.label}</Link>
+                  </Button>
+                ))}
+              </nav>
+            </SheetContent>
+          </Sheet>
+        )}
+
+        {/* Back Button */}
+        {hideMenu && (
+          <Button variant="ghost" asChild>
+            <Link href="/">Back</Link>
+          </Button>
+        )}
       </div>
     </header>
   );

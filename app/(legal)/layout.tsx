@@ -8,7 +8,7 @@ export default function LegalLayout({
 }) {
   return (
     <>
-      <Header />
+      <Header hideMenu />
       <main className="flex-1 py-24">
         <div className="container px-4 mx-auto">
           <div className="max-w-3xl mx-auto prose dark:prose-invert">
