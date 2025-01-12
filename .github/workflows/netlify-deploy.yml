@@ -30,17 +30,16 @@ jobs:
           # NEXT_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_URL }}
           NEXT_PUBLIC_DISCORD_WEBHOOK_URL: ${{ secrets.NEXT_PUBLIC_DISCORD_WEBHOOK_URL }}
 
-      - name: Build Netlify Functions
-        run: |
-          npm install @netlify/functions
-          mkdir -p netlify/functions
-          cp -r functions/api/* netlify/functions/
+      # - name: Build Netlify Functions
+      #   run: |
+      #     npm install @netlify/functions
+      #     mkdir -p netlify/functions
+      #     cp -r functions/api/* netlify/functions/
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2.1
         with:
           publish-dir: "./out"
-          functions-dir: "./netlify/functions"
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: "Deploy from GitHub Actions"

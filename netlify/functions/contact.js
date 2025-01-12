@@ -1,9 +1,8 @@
-import { NextResponse } from "next/server";
-
+// netlify/functions/contact.js
 const HCAPTCHA_SECRET_KEY = process.env.HCAPTCHA_SECRET_KEY || "ES_675ab5673ef14986bd44e2f51129eade";
-const DISCORD_WEBHOOK =  "https://discord.com/api/webhooks/1327635232895012944/qwPrrrUMEF2CdwskrOE-TK3Qe96oVlA0RLt6vIoKiF-qa-cgoH8Ix6qQAzgEttWZ7K67";
+const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1327635232895012944/qwPrrrUMEF2CdwskrOE-TK3Qe96oVlA0RLt6vIoKiF-qa-cgoH8Ix6qQAzgEttWZ7K67";
 
-async function verifyHCaptcha(token: string): Promise<boolean> {
+async function verifyHCaptcha(token) {
   try {
     console.log('Verifying hCaptcha token...');
     const response = await fetch("https://hcaptcha.com/siteverify", {
@@ -31,32 +30,37 @@ async function verifyHCaptcha(token: string): Promise<boolean> {
   }
 }
 
-export async function POST(req: Request) {
+exports.handler = async function(event, context) {
+  // Only allow POST
+  if (event.httpMethod !== "POST") {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: "Method not allowed" })
+    };
+  }
+
   try {
-    // Log the incoming request
-    console.log('Received contact form submission');
-    
     // Parse the request body
-    const body = await req.json();
+    const body = JSON.parse(event.body);
     const { name, email, message, captchaToken } = body;
     
     // Validate required fields
     if (!name || !email || !message || !captchaToken) {
       console.error('Missing required fields:', { name, email, message, hasToken: !!captchaToken });
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing required fields" })
+      };
     }
 
     // Verify hCaptcha
     const isValid = await verifyHCaptcha(captchaToken);
     if (!isValid) {
       console.error('Captcha validation failed');
-      return NextResponse.json(
-        { error: "Captcha validation failed" },
-        { status: 400 }
-      );
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Captcha validation failed" })
+      };
     }
 
     // Send to Discord
@@ -90,23 +94,22 @@ export async function POST(req: Request) {
     }
 
     console.log('Form submission successful');
-    return NextResponse.json({ 
-      message: "Form submitted successfully",
-      status: "success" 
-    });
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ 
+        message: "Form submitted successfully",
+        status: "success" 
+      })
+    };
 
   } catch (error) {
-    // Log the full error details
     console.error('Error processing form submission:', error);
-    
-    // Return a more detailed error response
-    return NextResponse.json(
-      { 
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ 
         error: "Internal Server Error",
-        message: (error instanceof Error) ? error.message : 'Unknown error',
-        details: (error instanceof Error && process.env.NODE_ENV === 'development') ? error.stack : undefined
-      },
-      { status: 500 }
-    );
+        message: error.message
+      })
+    };
   }
-}
+};

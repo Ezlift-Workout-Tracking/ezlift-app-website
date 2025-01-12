@@ -224,7 +224,7 @@ export function ContactForm() {
       };
 
       // Submit the form
-      const response = await fetch('/.netlify/functions/api/contact',{
+      const response = await fetch('/.netlify/functions/contact',{
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
