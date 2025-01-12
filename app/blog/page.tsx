@@ -21,21 +21,21 @@ export default function Blog() {
             </div>
           </FadeIn>
 
-          <div className="max-w-4xl mx-auto space-y-8">
-            {blogPosts.length > 0 ? (
-              blogPosts.map((post, index) => (
-              <FadeIn key={post.slug} delay={index * 100}>
-                <BlogCard post={post} />
-              </FadeIn>
-              ))
-            ) : (
-              <FadeIn>
-              <p className="text-center text-lg text-muted-foreground">
-                No articles available at the moment. Please check back later.
+          {blogPosts.length > 0 ? (
+            <div className="max-w-4xl mx-auto space-y-8">
+              {blogPosts.map((post, index) => (
+                <FadeIn key={post.slug} delay={index * 100}>
+                  <BlogCard post={post} />
+                </FadeIn>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <p className="text-lg text-muted-foreground">
+                No articles found. Check back later for updates!
               </p>
-              </FadeIn>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </main>
       <Footer />

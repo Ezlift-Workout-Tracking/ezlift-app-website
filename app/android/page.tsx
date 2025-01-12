@@ -7,8 +7,6 @@ import { useState } from "react";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Smartphone } from "lucide-react";
 
-const DISCORD_WEBHOOK = process.env.NEXT_PUBLIC_DISCORD_WEBHOOK_URL || "https://discord.com/api/webhooks/1323012306061234278/iJmoa7EV4avG6xzFMv9eHQZCNDd_Zr4-P7eotgr8iJLoZPKaPSb7vcTtr1IFOwDTyZNX";
-
 export default function AndroidWaitlist() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -21,26 +19,18 @@ export default function AndroidWaitlist() {
     setError("");
 
     try {
-      const response = await fetch(DISCORD_WEBHOOK, {
+      const response = await fetch('/.netlify/functions/waitlist', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          content: "New Android Waitlist Signup",
-          embeds: [{
-            title: "Android Waitlist Entry",
-            fields: [
-              { name: "Email", value: email }
-            ],
-            color: 5814783,
-            timestamp: new Date().toISOString()
-          }]
-        }),
+        body: JSON.stringify({ email }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to submit');
+        throw new Error(data.error || 'Failed to submit');
       }
 
       setSubmitted(true);
