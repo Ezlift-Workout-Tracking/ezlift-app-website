@@ -34,7 +34,7 @@ jobs:
         run: |
           npm install @netlify/functions
           mkdir -p netlify/functions
-          cp -r api/* netlify/functions/
+          cp -r functions/api/* netlify/functions/
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2.1
