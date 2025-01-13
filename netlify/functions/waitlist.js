@@ -1,3 +1,6 @@
+// Email validation regex - same as frontend for consistency
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 exports.handler = async function(event, context) {
   // Only allow POST requests
   if (event.httpMethod !== "POST") {
@@ -12,10 +15,28 @@ exports.handler = async function(event, context) {
   try {
     const { email } = JSON.parse(event.body);
 
-    if (!email) {
+    // Validate email
+    if (!email || typeof email !== 'string') {
       return {
         statusCode: 400,
         body: JSON.stringify({ error: "Email is required" })
+      };
+    }
+
+    const trimmedEmail = email.trim();
+
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Invalid email format" })
+      };
+    }
+
+    // Additional validation for maximum length
+    if (trimmedEmail.length > 254) { // RFC 5321
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Email address is too long" })
       };
     }
 
@@ -29,7 +50,7 @@ exports.handler = async function(event, context) {
         embeds: [{
           title: "Android Waitlist Entry",
           fields: [
-            { name: "Email", value: email }
+            { name: "Email", value: trimmedEmail }
           ],
           color: 5814783,
           timestamp: new Date().toISOString()

@@ -7,16 +7,37 @@ import { useState } from "react";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Smartphone } from "lucide-react";
 
+// Email validation regex
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 export default function AndroidWaitlist() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  const validateEmail = (email: string): boolean => {
+    if (!email) {
+      setError("Email is required");
+      return false;
+    }
+    if (!EMAIL_REGEX.test(email)) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError("");
+
+    // Validate email before submission
+    if (!validateEmail(email.trim())) {
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const response = await fetch('/.netlify/functions/waitlist', {
@@ -24,7 +45,7 @@ export default function AndroidWaitlist() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: email.trim() }),
       });
 
       const data = await response.json();
@@ -40,6 +61,11 @@ export default function AndroidWaitlist() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    setError(""); // Clear error when user starts typing
   };
 
   return (
@@ -72,15 +98,23 @@ export default function AndroidWaitlist() {
                   type="email"
                   placeholder="Enter your email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={handleEmailChange}
                   required
                   className="max-w-md mx-auto"
                   disabled={isSubmitting}
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? "email-error" : undefined}
                 />
                 {error && (
-                  <p className="text-sm text-red-500">{error}</p>
+                  <p className="text-sm text-red-500" id="email-error" role="alert">
+                    {error}
+                  </p>
                 )}
-                <Button type="submit" size="lg" disabled={isSubmitting}>
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  disabled={isSubmitting || !email.trim()}
+                >
                   {isSubmitting ? "Submitting..." : "Notify Me"}
                 </Button>
               </form>
