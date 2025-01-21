@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "generate-sitemap": "node lib/generateSiteMap.ts",
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run generate-sitemap && next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -60,6 +61,7 @@
     "input-otp": "^1.2.4",
     "lucide-react": "^0.446.0",
     "next": "^15.1.2",
+    "next-sitemap": "^4.2.3",
     "next-themes": "^0.3.0",
     "postcss": "^8.4.49",
     "react": "18.2.0",
