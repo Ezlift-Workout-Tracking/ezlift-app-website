@@ -11,6 +11,11 @@ const manrope = Manrope({ subsets: ['latin'], display: 'swap' });
 export const metadata: Metadata = {
   title: 'EZLift - Your Smart Workout Companion',
   description: 'Track workouts, analyze progress, and achieve your fitness goals with EZLift.',
+  icons: {
+    icon: '/favicon/favicon.ico',
+    shortcut: '/favicon/favicon-16x16.png',
+    apple: '/favicon/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({
@@ -20,6 +25,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+        <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+      </head>
       <body className={`${inter.className} dark`}>
         <ThemeProvider
           attribute="class"

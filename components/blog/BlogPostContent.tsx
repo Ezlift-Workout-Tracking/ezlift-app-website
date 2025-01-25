@@ -26,11 +26,11 @@ const customComponents: Partial<Components> = {
     if (React.isValidElement(children) && (children.type === 'img' || children.type === Image)) {
       return children;
     }
-    
+
     // Check if children is an array and contains only an image
-    if (Array.isArray(children) && children.length === 1 && 
-        React.isValidElement(children[0]) && 
-        (children[0].type === 'img' || children[0].type === Image)) {
+    if (Array.isArray(children) && children.length === 1 &&
+      React.isValidElement(children[0]) &&
+      (children[0].type === 'img' || children[0].type === Image)) {
       return children;
     }
 
@@ -108,7 +108,7 @@ export function BlogPostContent({ post }: { post: BlogPost }) {
     weekStartsOn: 1, // Ensure consistent week start
     locale: undefined // Use default locale to avoid locale-specific formatting
   });
-  
+
   return (
     <FadeIn key={post.slug}>
       <article className="max-w-3xl mx-auto">
@@ -141,7 +141,7 @@ export function BlogPostContent({ post }: { post: BlogPost }) {
             rehypePlugins={[rehypeRaw]}
             components={customComponents}
           >
-            {processContent(post.content)}
+            {post.content}
           </ReactMarkdown>
         </div>
       </article>
