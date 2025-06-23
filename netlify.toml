@@ -8,7 +8,16 @@
   to = "/index.html"
   status = 200
 
-# Netlify Forms headers
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+  # Optional: disable the strict “React-form check” if you
+  # decide NOT to add the static detector file.
+  # Uncomment the next two lines only in that case.
+[build.environment]
+NETLIFY_NEXT_VERIFY_FORMS = "false"
+
 [[headers]]
   for = "/*"
   [headers.values]
@@ -18,3 +27,4 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
