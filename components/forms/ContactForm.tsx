@@ -73,6 +73,7 @@ export function ContactForm() {
           minLength={10}
           maxLength={1000}
           rows={5}
+          className="resize-none"
         />
       </div>
 
