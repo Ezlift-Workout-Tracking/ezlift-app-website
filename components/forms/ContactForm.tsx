@@ -18,18 +18,20 @@ export function ContactForm() {
     const form = e.currentTarget;
     const formData = new FormData(form);
 
+    // Ensure form-name is included
+    formData.append("form-name", "contact");
+
     try {
       const response = await fetch("/", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(formData as any).toString(),
+        body: formData, // Send as FormData, not URLSearchParams
       });
 
       if (response.ok) {
         setSubmitted(true);
         form.reset();
       } else {
-        throw new Error("Form submission failed");
+        throw new Error(`Form submission failed: ${response.status}`);
       }
     } catch (err) {
       setError("Something went wrong. Please try again.");
