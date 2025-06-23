@@ -3,7 +3,11 @@
   publish = ".next"
 
 [build.environment]
-  NETLIFY_NEXT_VERIFY_FORMS = "false"
+  NETLIFY_NEXT_PLUGIN_SKIP_EDGE_FUNCTIONS_BUILD = "true"
+
+# Form handling
+[forms]
+  spam_protection = true
 
 # Note: For Next.js apps, you typically don't need manual redirects
 # since @netlify/plugin-nextjs handles routing automatically
