@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,6 +9,17 @@ import { Textarea } from "@/components/ui/textarea";
 export function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    if (submitted) {
+      const timer = setTimeout(() => {
+        router.push("/");
+      }, 5000); 
+
+      return () => clearTimeout(timer);
+    }
+  }, [submitted, router]);
 
   if (submitted) {
     return (
@@ -24,6 +36,7 @@ export function ContactForm() {
       method="POST"
       data-netlify="true"
       data-netlify-honeypot="bot-field"
+      onSubmit={() => setSubmitted(true)}
       className="space-y-6"
     >
       <input type="hidden" name="form-name" value="contact" />
@@ -40,7 +53,6 @@ export function ContactForm() {
           required
           minLength={2}
           maxLength={50}
-          className="bg-background"
         />
       </div>
 
@@ -48,13 +60,7 @@ export function ContactForm() {
         <label htmlFor="email" className="text-sm font-medium">
           Email *
         </label>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          required
-          className="bg-background"
-        />
+        <Input id="email" name="email" type="email" required />
       </div>
 
       <div className="space-y-2">
@@ -68,11 +74,10 @@ export function ContactForm() {
           minLength={10}
           maxLength={1000}
           rows={5}
-          className="bg-background resize-none"
         />
       </div>
 
-      <div data-netlify-recaptcha="true"></div>
+      <div data-netlify-recaptcha="true" />
 
       {error && (
         <div className="p-3 rounded bg-red-50 border border-red-200">
