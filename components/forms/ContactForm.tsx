@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 
 export function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -78,12 +77,6 @@ export function ContactForm() {
       </div>
 
       <div data-netlify-recaptcha="true" />
-
-      {error && (
-        <div className="p-3 rounded bg-red-50 border border-red-200">
-          <p className="text-sm text-red-600">{error}</p>
-        </div>
-      )}
 
       <Button type="submit" className="w-full">
         Send Message
