@@ -22,11 +22,7 @@ const footerLinks = [
     title: "Company",
     links: [
       { label: "About", href: "/about" },
-      {
-        label: "Contact",
-        href: "https://forms.gle/K61ASLmEnZomYfVR7",
-        external: true,
-      },
+      { label: "Contact", href: "/contact" },
     ],
   },
   {
