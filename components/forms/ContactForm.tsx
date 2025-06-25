@@ -8,9 +8,9 @@ import {
 
 export function ContactForm() {
   return (
-    <Card className="w-full max-w-4xl mx-auto p-0 ">
+    <Card className="w-full max-w-4xl mx-auto">
       <CardContent className="p-0">
-        <div className="w-full overflow-hidden rounded-lg border p-0">
+        <div className="w-full overflow-hidden rounded-lg border">
           <iframe 
             src="https://docs.google.com/forms/d/e/1FAIpQLSfFOwBcTuYQT8343m9be5lROPmWgMiGxtPULe4nA4GVChgmJw/viewform?embedded=true" 
             width="100%" 
