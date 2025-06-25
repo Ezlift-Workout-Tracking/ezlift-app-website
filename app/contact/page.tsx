@@ -11,10 +11,6 @@ export default function Contact() {
         <div className="container px-4 mx-auto">
           <FadeIn>
             <div className="max-w-2xl mx-auto">
-              <h1 className="text-4xl font-bold mb-6">Contact Us</h1>
-              <p className="text-lg text-muted-foreground mb-8">
-                Have a question or feedback? We'd love to hear from you.
-              </p>
               <ContactForm />
             </div>
           </FadeIn>
