@@ -22,7 +22,11 @@ const footerLinks = [
     title: "Company",
     links: [
       { label: "About", href: "/about" },
-      { label: "Contact", href: "/contact" },
+      {
+        label: "Contact",
+        href: "https://forms.gle/K61ASLmEnZomYfVR7",
+        external: true,
+      },
     ],
   },
   {
@@ -77,6 +81,10 @@ export function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
+                      {...(link.external && {
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                      })}
                       className="text-muted-foreground hover:text-primary transition-colors"
                     >
                       {link.label}
@@ -90,7 +98,9 @@ export function Footer() {
 
         {/* Copyright */}
         <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>© {currentYear} {BRAND.company.name}. All rights reserved.</p>
+          <p>
+            © {currentYear} {BRAND.company.name}. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
