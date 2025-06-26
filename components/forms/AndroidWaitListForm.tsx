@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, AlertCircle, Send, Mail } from 'lucide-react';
+import { CheckCircle, AlertCircle, Send, Mail, User, MessageSquare } from 'lucide-react';
 
 export function AndroidWaitListForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,7 +23,7 @@ export function AndroidWaitListForm() {
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -30,7 +31,7 @@ export function AndroidWaitListForm() {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
