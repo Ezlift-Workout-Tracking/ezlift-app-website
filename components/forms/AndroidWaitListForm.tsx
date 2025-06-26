@@ -63,25 +63,25 @@ export function AndroidWaitListForm() {
   if (submitted) {
     return (
       <div className="w-full max-w-2xl mx-auto">
-        <Card className="border-green-600 bg-gradient-to-br from-gray-900 to-green-900/20">
+        <Card className="border-border bg-card">
           <CardContent className="pt-6">
             <div className="text-center space-y-6">
               <div className="relative">
-                <CheckCircle className="h-20 w-20 text-green-400 mx-auto" />
-                <div className="absolute inset-0 h-20 w-20 mx-auto rounded-full bg-green-400 opacity-20 animate-ping"></div>
+                <CheckCircle className="h-20 w-20 text-primary mx-auto" />
+                <div className="absolute inset-0 h-20 w-20 mx-auto rounded-full bg-primary opacity-20 animate-ping"></div>
               </div>
               <div>
-                <h2 className="text-3xl font-bold text-green-400 mb-2">
+                <h2 className="text-3xl font-bold text-foreground mb-2">
                   You're on the list!
                 </h2>
-                <p className="text-green-300 text-lg">
+                <p className="text-muted-foreground text-lg">
                   Thanks for signing up! We'll notify you as soon as EZLift launches on Android.
                 </p>
               </div>
               <Button
                 onClick={() => setSubmitted(false)}
                 variant="outline"
-                className="border-green-500 text-green-400 hover:bg-green-900/50 bg-transparent px-8 py-2"
+                className="px-8 py-2"
               >
                 Sign Up Another Email
               </Button>
@@ -94,13 +94,13 @@ export function AndroidWaitListForm() {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <Card className="shadow-xl border border-gray-800 bg-gradient-to-br from-gray-900 to-black">
+      <Card className="shadow-xl border border-border bg-card">
         <CardHeader className="text-center pb-8">
-          <CardTitle className="text-4xl font-bold flex items-center justify-center gap-3 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-            <Send className="h-10 w-10 text-orange-500" />
+          <CardTitle className="text-4xl font-bold flex items-center justify-center gap-3 text-foreground">
+            <Send className="h-10 w-10 text-primary" />
             Coming Soon to Android
           </CardTitle>
-          <CardDescription className="text-xl text-gray-300 mt-3">
+          <CardDescription className="text-xl text-muted-foreground mt-3">
             EZLift is currently available on iOS, and we're working hard to bring the same great experience to Android. Sign up to be notified when we launch!
           </CardDescription>
         </CardHeader>
@@ -109,8 +109,8 @@ export function AndroidWaitListForm() {
             
             {/* Email Field */}
             <div className="space-y-3">
-              <label htmlFor="email" className="text-sm font-bold text-gray-200 flex items-center gap-2">
-                <Mail className="h-5 w-5 text-orange-500" />
+              <label htmlFor="email" className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Mail className="h-5 w-5 text-primary" />
                 Email address *
               </label>
               <Input
@@ -122,13 +122,13 @@ export function AndroidWaitListForm() {
                 value={formData.email}
                 onChange={handleInputChange}
                 disabled={isSubmitting}
-                className="h-14 border-2 border-gray-700 bg-gray-800 text-white placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 text-lg"
+                className="h-14 border-2 border-border bg-input text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-lg"
               />
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="flex items-center gap-3 bg-red-900/50 border-2 border-red-700 text-red-300 px-6 py-4 rounded-lg">
+              <div className="flex items-center gap-3 bg-destructive/10 border-2 border-destructive text-destructive-foreground px-6 py-4 rounded-lg">
                 <AlertCircle className="h-6 w-6" />
                 <span className="font-semibold">{error}</span>
               </div>
@@ -137,7 +137,7 @@ export function AndroidWaitListForm() {
             {/* Submit Button */}
             <Button 
               onClick={handleSubmit}
-              className="w-full h-14 text-xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transform hover:scale-105 transition-all duration-200 shadow-lg border-0" 
+              className="w-full h-14 text-xl font-bold transform hover:scale-105 transition-all duration-200 shadow-lg" 
               disabled={isSubmitting || !formData.email}
             >
               {isSubmitting ? (
@@ -154,9 +154,9 @@ export function AndroidWaitListForm() {
             </Button>
 
             {/* Privacy Note */}
-            <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 text-center">
-              <p className="text-sm text-gray-300">
-                🔒 <strong className="text-white">Your privacy matters.</strong> We'll only email you about the Android launch and never share your information.
+            <div className="bg-muted border border-border rounded-lg p-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                🔒 <strong className="text-foreground">Your privacy matters.</strong> We'll only email you about the Android launch and never share your information.
               </p>
             </div>
           </div>
