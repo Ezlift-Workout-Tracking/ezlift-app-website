@@ -106,7 +106,7 @@ export function ContactForm() {
             <Send className="h-10 w-10 text-primary" />
             Contact Us
           </CardTitle>
-          <CardDescription className="text-xl text-muted-foreground mt-3">
+          <CardDescription className="text-xl text-muted-foreground pt-4">
             Have a question or feedback? We'd love to hear from you.
           </CardDescription>
         </CardHeader>

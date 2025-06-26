@@ -97,10 +97,10 @@ export function AndroidWaitListForm() {
       <Card className="shadow-xl border border-border bg-card">
         <CardHeader className="text-center pb-8">
           <CardTitle className="text-4xl font-bold flex items-center justify-center gap-3 text-foreground">
-            <Send className="h-10 w-10 text-primary" />
+            <Send className="h-12 w-10 text-primary" />
             Coming Soon to Android
           </CardTitle>
-          <CardDescription className="text-xl text-muted-foreground mt-3">
+          <CardDescription className="text-xl text-muted-foreground pt-4">
             EZLift is currently available on iOS, and we're working hard to bring the same great experience to Android. Sign up to be notified when we launch!
           </CardDescription>
         </CardHeader>
