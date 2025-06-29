@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
-import { Menu } from "lucide-react";
+import { Menu, ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 export function Header({ hideMenu = false }: { hideMenu?: boolean }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   const menuItems = [
     { href: "#features", label: "Features" },
@@ -16,11 +18,26 @@ export function Header({ hideMenu = false }: { hideMenu?: boolean }) {
     { href: "/blog", label: "Blog" },
   ];
 
+  const getBackHref = () => {
+    console.log("hello")
+    if (pathname?.startsWith("/blog/")) {
+      return "/blog"; 
+    }
+    return "/";
+  };
+
+  const getBackLabel = () => {
+    if (pathname?.startsWith("/blog/")) {
+      return "Back to Blog";
+    }
+    return "Back";
+  };
+
   return (
     <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Logo />
-        
+
         {/* Desktop Navigation */}
         {!hideMenu && (
           <nav className="hidden md:flex items-center gap-6">
@@ -62,7 +79,10 @@ export function Header({ hideMenu = false }: { hideMenu?: boolean }) {
         {/* Back Button */}
         {hideMenu && (
           <Button variant="ghost" asChild>
-            <Link href="/">Back</Link>
+            <Link href={getBackHref()} className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              {getBackLabel()}
+            </Link>
           </Button>
         )}
       </div>
