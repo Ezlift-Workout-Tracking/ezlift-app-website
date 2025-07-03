@@ -1,8 +1,20 @@
 const fs = require('fs');
 const path = require('path');
 
-const generateSitemap = () => {
-    const urls = [
+const generateSitemap = async () => {
+    // Import Contentful function
+    const { getAllBlogPostSlugs } = require('./contentful');
+    
+    let blogSlugs = [];
+    try {
+        blogSlugs = await getAllBlogPostSlugs();
+    } catch (error) {
+        console.warn('Could not fetch blog slugs from Contentful:', error.message);
+        // Fallback to empty array if Contentful is not available during build
+        blogSlugs = [];
+    }
+
+    const staticUrls = [
         {
             url: 'https://ezlift.app',
             lastModified: new Date().toISOString(),
@@ -34,18 +46,6 @@ const generateSitemap = () => {
             priority: 0.9,
         },
         {
-            url: 'https://ezlift.app/blog/workout-tracking',
-            lastModified: new Date().toISOString(),
-            changeFrequency: 'monthly',
-            priority: 0.9,
-        },
-        {
-            url: 'https://ezlift.app/blog/fitness-minimalism',
-            lastModified: new Date().toISOString(),
-            changeFrequency: 'monthly',
-            priority: 0.9,
-        },
-        {
             url: 'https://ezlift.app/about',
             lastModified: new Date().toISOString(),
             changeFrequency: 'yearly',
@@ -53,9 +53,19 @@ const generateSitemap = () => {
         },
     ];
 
+    // Add dynamic blog post URLs
+    const blogUrls = blogSlugs.map(slug => ({
+        url: `https://ezlift.app/blog/${slug}`,
+        lastModified: new Date().toISOString(),
+        changeFrequency: 'monthly',
+        priority: 0.9,
+    }));
+
+    const allUrls = [...staticUrls, ...blogUrls];
+
     const sitemapXML = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-    ${urls
+    ${allUrls
             .map(
                 (url) => `
     <url>
@@ -69,7 +79,7 @@ const generateSitemap = () => {
 </urlset>`;
 
     fs.writeFileSync(path.join(__dirname, '../public/sitemap.xml'), sitemapXML, 'utf8');
-    console.log('Sitemap generated!');
+    console.log('Sitemap generated with', allUrls.length, 'URLs!');
 };
 
-generateSitemap();
+generateSitemap().catch(console.error);

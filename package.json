@@ -10,6 +10,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@contentful/rich-text-react-renderer": "^15.19.4",
+    "@contentful/rich-text-types": "^16.3.0",
     "@hcaptcha/react-hcaptcha": "^1.11.0",
     "@hookform/resolvers": "^3.9.0",
     "@netlify/functions": "^3.0.0",
@@ -53,6 +55,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
+    "contentful": "^10.6.21",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
     "eslint": "8.49.0",

@@ -1,18 +1,32 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
-import { format } from "date-fns";
-import type { BlogPost } from "@/types/blog";
+import { format, parseISO } from "date-fns";
+import type { BlogPost } from "@/lib/contentful";
 
 interface BlogCardProps {
   post: BlogPost;
 }
 
 export function BlogCard({ post }: BlogCardProps) {
+  const formattedDate = format(parseISO(post.publishDate), "MMMM d, yyyy");
+
   return (
     <Link href={`/blog/${post.slug}`}>
       <Card className="p-6 hover:bg-muted/50 transition-colors">
         <article className="flex flex-col md:flex-row gap-6">
+          {post.coverImage && (
+            <div className="md:w-48 md:flex-shrink-0">
+              <Image
+                src={post.coverImage}
+                alt={post.title}
+                width={192}
+                height={128}
+                className="rounded-lg w-full h-32 md:h-full object-cover"
+              />
+            </div>
+          )}
+          
           <div className="flex-1">
             <header className="mb-4">
               <h2 className="text-2xl font-bold mb-2 hover:text-primary transition-colors">
@@ -31,9 +45,7 @@ export function BlogCard({ post }: BlogCardProps) {
                   <span>{post.author.name}</span>
                 </div>
                 <span>•</span>
-                <time dateTime={post.date}>
-                  {format(new Date(post.date), "MMMM d, yyyy")}
-                </time>
+                <time dateTime={post.publishDate}>{formattedDate}</time>
               </div>
             </header>
             <p className="text-muted-foreground">{post.excerpt}</p>

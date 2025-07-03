@@ -1,12 +1,16 @@
-"use client";
-
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { BlogCard } from "@/components/cards/BlogCard";
-import { blogPosts } from "@/lib/data/blog";
 import { FadeIn } from "@/components/animations/FadeIn";
+import { getAllBlogPosts } from "@/lib/contentful";
+import { EmptyState } from "@/components/ui/empty-state";
+import { FileText } from "lucide-react";
 
-export default function Blog() {
+export const revalidate = 3600; // Revalidate every hour
+
+export default async function Blog() {
+  const posts = await getAllBlogPosts();
+
   return (
     <>
       <Header hideMenu />
@@ -21,19 +25,21 @@ export default function Blog() {
             </div>
           </FadeIn>
 
-          {blogPosts.length > 0 ? (
+          {posts.length > 0 ? (
             <div className="max-w-4xl mx-auto space-y-8">
-              {blogPosts.map((post, index) => (
-                <FadeIn key={post.slug} delay={index * 100}>
+              {posts.map((post, index) => (
+                <FadeIn key={post.id} delay={index * 100}>
                   <BlogCard post={post} />
                 </FadeIn>
               ))}
             </div>
           ) : (
-            <div className="text-center py-16">
-              <p className="text-lg text-muted-foreground">
-                No articles found. Check back later for updates!
-              </p>
+            <div className="max-w-4xl mx-auto">
+              <EmptyState
+                icon={<FileText className="w-12 h-12 text-muted-foreground" />}
+                title="No Articles Found"
+                description="We're working on creating great content for you. Check back soon for fitness tips and insights!"
+              />
             </div>
           )}
         </div>
