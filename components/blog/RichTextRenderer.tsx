@@ -13,11 +13,11 @@ interface RichTextRendererProps {
 // Custom rendering options for rich text
 const renderOptions = {
   renderMark: {
-    [MARKS.BOLD]: (text: ReactNode) => <strong className="font-semibold">{text}</strong>,
-    [MARKS.ITALIC]: (text: ReactNode) => <em className="italic">{text}</em>,
-    [MARKS.UNDERLINE]: (text: ReactNode) => <u className="underline">{text}</u>,
+    [MARKS.BOLD]: (text: ReactNode) => <strong className="font-semibold text-gray-900">{text}</strong>,
+    [MARKS.ITALIC]: (text: ReactNode) => <em className="italic text-gray-800">{text}</em>,
+    [MARKS.UNDERLINE]: (text: ReactNode) => <u className="underline text-gray-800">{text}</u>,
     [MARKS.CODE]: (text: ReactNode) => (
-      <code className="bg-gray-100 dark:bg-gray-900 px-1.5 py-0.5 rounded text-sm font-mono">
+      <code className="bg-gray-200 text-gray-900 px-1.5 py-0.5 rounded text-sm font-mono">
         {text}
       </code>
     ),
@@ -31,44 +31,44 @@ const renderOptions = {
       ) {
         return <div className="my-6">{children}</div>;
       }
-      return <p className="mb-4 leading-relaxed">{children}</p>;
+      return <p className="mb-4 leading-relaxed text-gray-800">{children}</p>;
     },
     [BLOCKS.HEADING_1]: (node: any, children: ReactNode) => (
-      <h1 className="text-3xl font-bold mt-8 mb-4">{children}</h1>
+      <h1 className="text-3xl font-bold mt-8 mb-4 text-gray-900">{children}</h1>
     ),
     [BLOCKS.HEADING_2]: (node: any, children: ReactNode) => (
-      <h2 className="text-2xl font-semibold mt-8 mb-4">{children}</h2>
+      <h2 className="text-2xl font-semibold mt-8 mb-4 text-gray-900">{children}</h2>
     ),
     [BLOCKS.HEADING_3]: (node: any, children: ReactNode) => (
-      <h3 className="text-xl font-semibold mt-6 mb-3">{children}</h3>
+      <h3 className="text-xl font-semibold mt-6 mb-3 text-gray-900">{children}</h3>
     ),
     [BLOCKS.HEADING_4]: (node: any, children: ReactNode) => (
-      <h4 className="text-lg font-semibold mt-4 mb-2">{children}</h4>
+      <h4 className="text-lg font-semibold mt-4 mb-2 text-gray-900">{children}</h4>
     ),
     [BLOCKS.HEADING_5]: (node: any, children: ReactNode) => (
-      <h5 className="text-base font-semibold mt-4 mb-2">{children}</h5>
+      <h5 className="text-base font-semibold mt-4 mb-2 text-gray-900">{children}</h5>
     ),
     [BLOCKS.HEADING_6]: (node: any, children: ReactNode) => (
-      <h6 className="text-sm font-semibold mt-4 mb-2">{children}</h6>
+      <h6 className="text-sm font-semibold mt-4 mb-2 text-gray-900">{children}</h6>
     ),
     [BLOCKS.UL_LIST]: (node: any, children: ReactNode) => (
-      <ul className="mb-6 ml-6 space-y-2 list-disc">{children}</ul>
+      <ul className="mb-6 ml-6 space-y-2 list-disc text-gray-800">{children}</ul>
     ),
     [BLOCKS.OL_LIST]: (node: any, children: ReactNode) => (
-      <ol className="mb-6 ml-6 space-y-2 list-decimal">{children}</ol>
+      <ol className="mb-6 ml-6 space-y-2 list-decimal text-gray-800">{children}</ol>
     ),
     [BLOCKS.LIST_ITEM]: (node: any, children: ReactNode) => (
-      <li className="leading-relaxed">{children}</li>
+      <li className="leading-relaxed text-gray-800">{children}</li>
     ),
     [BLOCKS.QUOTE]: (node: any, children: ReactNode) => (
-      <blockquote className="border-l-4 border-gray-300 dark:border-gray-700 pl-4 my-4 italic">
+      <blockquote className="border-l-4 border-blue-500 pl-4 my-4 italic text-gray-700 bg-gray-50 py-2">
         {children}
       </blockquote>
     ),
-    [BLOCKS.HR]: () => <hr className="my-8 border-gray-300 dark:border-gray-700" />,
+    [BLOCKS.HR]: () => <hr className="my-8 border-gray-300" />,
     [BLOCKS.TABLE]: (node: any, children: ReactNode) => (
       <div className="overflow-x-auto my-6">
-        <table className="min-w-full border border-gray-300 dark:border-gray-700">
+        <table className="min-w-full border border-gray-300 bg-white">
           <tbody>
             {children}
           </tbody>
@@ -76,12 +76,12 @@ const renderOptions = {
       </div>
     ),
     [BLOCKS.TABLE_HEADER_CELL]: (node: any, children: ReactNode) => (
-      <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 bg-gray-100 dark:bg-gray-800 font-semibold text-left">
+      <th className="border border-gray-300 px-4 py-2 bg-gray-50 font-semibold text-left text-gray-900">
         {children}
       </th>
     ),
     [BLOCKS.TABLE_CELL]: (node: any, children: ReactNode) => (
-      <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+      <td className="border border-gray-300 px-4 py-2 text-gray-800">
         {children}
       </td>
     ),
@@ -115,7 +115,7 @@ const renderOptions = {
       return (
         <Link
           href={uri}
-          className="text-primary hover:underline"
+          className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
           target={isExternal ? '_blank' : undefined}
           rel={isExternal ? 'noopener noreferrer' : undefined}
         >
@@ -128,7 +128,7 @@ const renderOptions = {
       const { target } = node.data;
       if (target?.fields?.slug) {
         return (
-          <Link href={`/blog/${target.fields.slug}`} className="text-primary hover:underline">
+          <Link href={`/blog/${target.fields.slug}`} className="text-blue-600 hover:text-blue-800 hover:underline transition-colors">
             {children}
           </Link>
         );
@@ -145,7 +145,7 @@ const renderOptions = {
         return (
           <Link
             href={url}
-            className="text-primary hover:underline"
+            className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -160,7 +160,7 @@ const renderOptions = {
 
 export function RichTextRenderer({ content }: RichTextRendererProps) {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray max-w-none">
       {documentToReactComponents(content, renderOptions)}
     </div>
   );

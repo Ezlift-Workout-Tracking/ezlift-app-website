@@ -33,9 +33,9 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
             </div>
           )}
           
-          <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+          <h1 className="text-4xl font-bold mb-4 text-gray-900">{post.title}</h1>
           
-          <div className="flex items-center gap-4 text-muted-foreground">
+          <div className="flex items-center gap-4 text-gray-600">
             <div className="flex items-center gap-2">
               <div className="relative w-10 h-10 rounded-full overflow-hidden">
                 <Image
@@ -47,8 +47,8 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
                 />
               </div>
               <div>
-                <p className="font-medium text-foreground">{post.author.name}</p>
-                <p className="text-sm">{post.author.role}</p>
+                <p className="font-medium text-gray-900">{post.author.name}</p>
+                <p className="text-sm text-gray-600">{post.author.role}</p>
               </div>
             </div>
             <span>•</span>
@@ -56,7 +56,7 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
           </div>
         </header>
 
-        <div className="text-gray-800 dark:text-gray-200">
+        <div className="text-gray-900">
           <RichTextRenderer content={post.content} />
         </div>
       </article>

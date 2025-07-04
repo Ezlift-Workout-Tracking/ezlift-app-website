@@ -65,12 +65,15 @@ export default async function BlogPost({ params }: Props) {
   return (
     <>
       <Header hideMenu />
-      <main className="flex-1 py-24">
-        <div className="container px-4 mx-auto">
-          <BlogPostContent post={post} />
-        </div>
-      </main>
-      <Footer />
+      {/* Light theme wrapper for blog post */}
+      <div className="min-h-screen bg-gray-100 text-gray-900">
+        <main className="flex-1 py-24">
+          <div className="container px-4 mx-auto">
+            <BlogPostContent post={post} />
+          </div>
+        </main>
+        <Footer />
+      </div>
     </>
   );
 }
