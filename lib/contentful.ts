@@ -54,7 +54,7 @@ export interface ContentfulBlogPost {
     publishDate: string;
     excerpt: string;
     content: Document;
-    coverImage?: ContentfulAsset;
+    coverImage?: ContentfulAsset[]; // Cover image is an array of assets
   };
 }
 
@@ -80,11 +80,24 @@ export interface BlogPost {
 }
 
 // Helper function to transform Contentful asset to URL
-const getAssetUrl = (asset?: ContentfulAsset): string => {
-  if (!asset?.fields?.file?.url) return '';
-  return asset.fields.file.url.startsWith('//') 
+const getAssetUrl = (asset?: ContentfulAsset | ContentfulAsset[]): string => {
+  // Handle array of assets - take the first one
+  if (Array.isArray(asset)) {
+    if (asset.length === 0) {
+      return '';
+    }
+    asset = asset[0];
+  }
+  
+  if (!asset?.fields?.file?.url) {
+    return '';
+  }
+  
+  const url = asset.fields.file.url.startsWith('//') 
     ? `https:${asset.fields.file.url}` 
     : asset.fields.file.url;
+    
+  return url;
 };
 
 // Helper function to transform Contentful author
@@ -100,18 +113,20 @@ const transformAuthor = (author?: ContentfulAuthor): BlogAuthor => {
 };
 
 // Helper function to transform Contentful blog post
-const transformBlogPost = (post: ContentfulBlogPost): BlogPost => ({
-  id: post.sys.id,
-  title: post.fields.title,
-  slug: post.fields.slug,
-  author: transformAuthor(post.fields.author),
-  publishDate: post.fields.publishDate,
-  excerpt: post.fields.excerpt,
-  content: post.fields.content,
-  coverImage: getAssetUrl(post.fields.coverImage),
-  createdAt: post.sys.createdAt,
-  updatedAt: post.sys.updatedAt,
-});
+const transformBlogPost = (post: ContentfulBlogPost): BlogPost => {
+  return {
+    id: post.sys.id,
+    title: post.fields.title,
+    slug: post.fields.slug,
+    author: transformAuthor(post.fields.author),
+    publishDate: post.fields.publishDate,
+    excerpt: post.fields.excerpt,
+    content: post.fields.content,
+    coverImage: getAssetUrl(post.fields.coverImage),
+    createdAt: post.sys.createdAt,
+    updatedAt: post.sys.updatedAt,
+  };
+};
 
 // Fetch all blog posts
 export async function getAllBlogPosts(): Promise<BlogPost[]> {
@@ -119,7 +134,7 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
     const response = await client.getEntries<any>({
       content_type: 'blog',
       order: ['-fields.publishDate'],
-      include: 3, // Increase to include author images (blog -> author -> image)
+      include: 10, // Increase to maximum to include all linked assets
     });
 
     return response.items.map((item: any) => transformBlogPost(item));
@@ -135,7 +150,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
     const response = await client.getEntries<any>({
       content_type: 'blog',
       'fields.slug': slug,
-      include: 3, // Increase to include author images (blog -> author -> image)
+      include: 10, // Increase to maximum to include all linked assets
       limit: 1,
     });
 
