@@ -86,11 +86,15 @@ const getAssetUrl = (asset?: ContentfulAsset): string => {
 };
 
 // Helper function to transform Contentful author
-const transformAuthor = (author?: ContentfulAuthor): BlogAuthor => ({
-  name: author?.fields?.name || "Unknown Author",
-  role: author?.fields?.role || "",
-  image: getAssetUrl(author?.fields?.image) || '/team/default-avatar.webp',
-});
+const transformAuthor = (author?: ContentfulAuthor): BlogAuthor => {
+  const imageUrl = getAssetUrl(author?.fields?.image);
+  
+  return {
+    name: author?.fields?.name || "Unknown Author",
+    role: author?.fields?.role || "",
+    image: imageUrl || '/team/default-avatar.webp', // Now using the proper default avatar
+  };
+};
 
 // Helper function to transform Contentful blog post
 const transformBlogPost = (post: ContentfulBlogPost): BlogPost => ({
@@ -112,7 +116,7 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
     const response = await client.getEntries<ContentfulBlogPost>({
       content_type: 'blog',
       order: '-fields.publishDate',
-      include: 2, // Include linked entries (author, images)
+      include: 3, // Increase to include author images (blog -> author -> image)
     });
 
     return response.items.map(transformBlogPost);
@@ -128,7 +132,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
     const response = await client.getEntries<ContentfulBlogPost>({
       content_type: 'blog',
       'fields.slug': slug,
-      include: 2,
+      include: 3, // Increase to include author images (blog -> author -> image)
       limit: 1,
     });
 
