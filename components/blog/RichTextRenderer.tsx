@@ -69,7 +69,9 @@ const renderOptions = {
     [BLOCKS.TABLE]: (node: any, children: ReactNode) => (
       <div className="overflow-x-auto my-6">
         <table className="min-w-full border border-gray-300 dark:border-gray-700">
-          {children}
+          <tbody>
+            {children}
+          </tbody>
         </table>
       </div>
     ),
