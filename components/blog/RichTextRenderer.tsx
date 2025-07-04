@@ -61,14 +61,14 @@ const renderOptions = {
       <li className="leading-relaxed text-gray-800">{children}</li>
     ),
     [BLOCKS.QUOTE]: (node: any, children: ReactNode) => (
-      <blockquote className="border-l-4 border-blue-500 pl-4 my-4 italic text-gray-700 bg-gray-50 py-2">
+      <blockquote className="border-l-4 border-gray-800 pl-6 my-6 italic text-gray-700 bg-gray-50 py-4 rounded-r-lg">
         {children}
       </blockquote>
     ),
     [BLOCKS.HR]: () => <hr className="my-8 border-gray-300" />,
     [BLOCKS.TABLE]: (node: any, children: ReactNode) => (
-      <div className="overflow-x-auto my-6">
-        <table className="min-w-full border border-gray-300 bg-white">
+      <div className="overflow-x-auto my-6 rounded-lg border border-gray-300 shadow-sm">
+        <table className="min-w-full bg-white">
           <tbody>
             {children}
           </tbody>
@@ -76,12 +76,12 @@ const renderOptions = {
       </div>
     ),
     [BLOCKS.TABLE_HEADER_CELL]: (node: any, children: ReactNode) => (
-      <th className="border border-gray-300 px-4 py-2 bg-gray-50 font-semibold text-left text-gray-900">
+      <th className="border-b border-gray-300 px-6 py-3 bg-gray-800 text-white font-semibold text-left [&_p]:!text-white [&_p]:mb-0">
         {children}
       </th>
     ),
     [BLOCKS.TABLE_CELL]: (node: any, children: ReactNode) => (
-      <td className="border border-gray-300 px-4 py-2 text-gray-800">
+      <td className="border-b border-gray-200 px-6 py-3 text-gray-800">
         {children}
       </td>
     ),
@@ -115,7 +115,7 @@ const renderOptions = {
       return (
         <Link
           href={uri}
-          className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+          className="text-gray-800 hover:text-gray-900 underline decoration-gray-600 hover:decoration-gray-800 transition-colors font-medium"
           target={isExternal ? '_blank' : undefined}
           rel={isExternal ? 'noopener noreferrer' : undefined}
         >
@@ -128,7 +128,7 @@ const renderOptions = {
       const { target } = node.data;
       if (target?.fields?.slug) {
         return (
-          <Link href={`/blog/${target.fields.slug}`} className="text-blue-600 hover:text-blue-800 hover:underline transition-colors">
+          <Link href={`/blog/${target.fields.slug}`} className="text-gray-800 hover:text-gray-900 underline decoration-gray-600 hover:decoration-gray-800 transition-colors font-medium">
             {children}
           </Link>
         );
@@ -145,7 +145,7 @@ const renderOptions = {
         return (
           <Link
             href={url}
-            className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+            className="text-gray-800 hover:text-gray-900 underline decoration-gray-600 hover:decoration-gray-800 transition-colors font-medium"
             target="_blank"
             rel="noopener noreferrer"
           >

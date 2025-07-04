@@ -35,8 +35,9 @@ export interface ContentfulAuthor {
   };
   fields: {
     name: string;
-    role: string;
-    image?: ContentfulAsset;
+    slug: string;
+    bio: string;
+    avatar?: ContentfulAsset;
   };
 }
 
@@ -60,8 +61,9 @@ export interface ContentfulBlogPost {
 // Transformed interfaces for our application
 export interface BlogAuthor {
   name: string;
-  role: string;
-  image: string;
+  slug: string;
+  bio: string;
+  avatar: string;
 }
 
 export interface BlogPost {
@@ -87,12 +89,13 @@ const getAssetUrl = (asset?: ContentfulAsset): string => {
 
 // Helper function to transform Contentful author
 const transformAuthor = (author?: ContentfulAuthor): BlogAuthor => {
-  const imageUrl = getAssetUrl(author?.fields?.image);
+  const avatarUrl = getAssetUrl(author?.fields?.avatar);
   
   return {
     name: author?.fields?.name || "Unknown Author",
-    role: author?.fields?.role || "",
-    image: imageUrl || '/team/default-avatar.webp', // Now using the proper default avatar
+    slug: author?.fields?.slug || "",
+    bio: author?.fields?.bio || "",
+    avatar: avatarUrl || '/team/default-avatar.webp', // Now using the proper default avatar
   };
 };
 
@@ -113,13 +116,13 @@ const transformBlogPost = (post: ContentfulBlogPost): BlogPost => ({
 // Fetch all blog posts
 export async function getAllBlogPosts(): Promise<BlogPost[]> {
   try {
-    const response = await client.getEntries<ContentfulBlogPost>({
+    const response = await client.getEntries<any>({
       content_type: 'blog',
-      order: '-fields.publishDate',
+      order: ['-fields.publishDate'],
       include: 3, // Increase to include author images (blog -> author -> image)
     });
 
-    return response.items.map(transformBlogPost);
+    return response.items.map((item: any) => transformBlogPost(item));
   } catch (error) {
     console.error('Error fetching blog posts from Contentful:', error);
     return [];
@@ -129,7 +132,7 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
 // Fetch a single blog post by slug
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
   try {
-    const response = await client.getEntries<ContentfulBlogPost>({
+    const response = await client.getEntries<any>({
       content_type: 'blog',
       'fields.slug': slug,
       include: 3, // Increase to include author images (blog -> author -> image)
@@ -140,7 +143,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
       return null;
     }
 
-    return transformBlogPost(response.items[0]);
+    return transformBlogPost(response.items[0] as any);
   } catch (error) {
     console.error(`Error fetching blog post with slug "${slug}":`, error);
     return null;
@@ -150,12 +153,12 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
 // Get all blog post slugs for static generation
 export async function getAllBlogPostSlugs(): Promise<string[]> {
   try {
-    const response = await client.getEntries<ContentfulBlogPost>({
+    const response = await client.getEntries<any>({
       content_type: 'blog',
-      select: 'fields.slug',
+      select: ['fields.slug'],
     });
 
-    return response.items.map(item => item.fields.slug);
+    return response.items.map((item: any) => item.fields.slug);
   } catch (error) {
     console.error('Error fetching blog post slugs:', error);
     return [];
@@ -171,7 +174,7 @@ export async function getPreviewBlogPostBySlug(slug: string): Promise<BlogPost |
       host: 'preview.contentful.com',
     });
 
-    const response = await previewClient.getEntries<ContentfulBlogPost>({
+    const response = await previewClient.getEntries<any>({
       content_type: 'blog',
       'fields.slug': slug,
       include: 2,
@@ -182,7 +185,7 @@ export async function getPreviewBlogPostBySlug(slug: string): Promise<BlogPost |
       return null;
     }
 
-    return transformBlogPost(response.items[0]);
+    return transformBlogPost(response.items[0] as any);
   } catch (error) {
     console.error(`Error fetching preview blog post with slug "${slug}":`, error);
     return null;

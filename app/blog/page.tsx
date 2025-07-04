@@ -17,23 +17,25 @@ export default async function Blog() {
       {/* Light theme wrapper for blog section */}
       <div className="min-h-screen bg-gray-100 text-gray-900">
         <main className="flex-1 py-24">
-          <div className="container px-4 mx-auto">
+          <div className="container px-4 mx-auto max-w-7xl">
             <FadeIn>
-              <div className="max-w-3xl mx-auto text-center mb-12">
-                <h1 className="text-4xl font-bold mb-4 text-gray-900">Latest Articles</h1>
-                <p className="text-lg text-gray-600">
+              <div className="max-w-3xl mx-auto text-center mb-16">
+                <h1 className="text-5xl font-bold mb-6 text-gray-900">Latest Articles</h1>
+                <p className="text-xl text-gray-600 leading-relaxed">
                   Discover tips, guides, and insights about strength training and fitness.
                 </p>
               </div>
             </FadeIn>
 
             {posts.length > 0 ? (
-              <div className="max-w-4xl mx-auto space-y-8">
-                {posts.map((post, index) => (
-                  <FadeIn key={post.id} delay={index * 100}>
-                    <BlogCard post={post} />
-                  </FadeIn>
-                ))}
+              <div className="container max-w-6xl mx-auto">
+                <div className="grid gap-8 justify-center" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 380px))' }}>
+                  {posts.map((post, index) => (
+                    <FadeIn key={post.id} delay={index * 100}>
+                      <BlogCard post={post} />
+                    </FadeIn>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="max-w-4xl mx-auto">
