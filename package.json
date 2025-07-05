@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "generate-sitemap": "node lib/generateSiteMap.ts",
+    "generate-sitemap": "tsx lib/generateSiteMap.ts",
     "dev": "next dev",
     "build": "npm run generate-sitemap && next build",
     "start": "next start",
@@ -84,6 +84,7 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss": "3.3.3",
     "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.19.2",
     "typescript": "5.2.2",
     "vaul": "^0.9.9",
     "zod": "^3.24.1"

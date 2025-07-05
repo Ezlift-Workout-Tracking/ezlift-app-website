@@ -13,9 +13,9 @@ export default async function Blog() {
 
   return (
     <>
-      <Header hideMenu />
+      <Header hideMenu className="bg-gray-900 !bg-opacity-100 !backdrop-blur-none supports-[backdrop-filter]:bg-gray-900" />
       {/* Light theme wrapper for blog section */}
-      <div className="min-h-screen bg-gray-100 text-gray-900">
+      <div className="flex flex-col min-h-screen bg-gray-100 text-gray-900">
         <main className="flex-1 py-24">
           <div className="container px-4 mx-auto max-w-7xl">
             <FadeIn>

@@ -73,7 +73,7 @@ export default async function BlogPost({ params }: Props) {
 
   return (
     <>
-      <Header hideMenu />
+      <Header hideMenu className="bg-gray-900 !bg-opacity-100 !backdrop-blur-none supports-[backdrop-filter]:bg-gray-900" />
       {/* Light theme wrapper for blog post */}
       <div className="min-h-screen bg-gray-100 text-gray-900">
         <main className="flex-1 py-24">

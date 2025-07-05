@@ -1,15 +1,14 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { getAllBlogPostSlugs } from './contentful';
 
 const generateSitemap = async () => {
-    // Import Contentful function
-    const { getAllBlogPostSlugs } = require('./contentful');
-    
-    let blogSlugs = [];
+    let blogSlugs: string[] = [];
     try {
         blogSlugs = await getAllBlogPostSlugs();
-    } catch (error) {
-        console.warn('Could not fetch blog slugs from Contentful:', error.message);
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.warn('Could not fetch blog slugs from Contentful:', errorMessage);
         // Fallback to empty array if Contentful is not available during build
         blogSlugs = [];
     }
