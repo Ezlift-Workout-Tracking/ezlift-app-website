@@ -7,8 +7,9 @@ import { Logo } from "@/components/brand/Logo";
 import { Menu, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import clsx from "clsx";
 
-export function Header({ hideMenu = false }: { hideMenu?: boolean }) {
+export function Header({ hideMenu = false, className = "" }: { hideMenu?: boolean; className?: string }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -19,7 +20,6 @@ export function Header({ hideMenu = false }: { hideMenu?: boolean }) {
   ];
 
   const getBackHref = () => {
-    console.log("hello")
     if (pathname?.startsWith("/blog/")) {
       return "/blog"; 
     }
@@ -34,7 +34,7 @@ export function Header({ hideMenu = false }: { hideMenu?: boolean }) {
   };
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className={clsx("fixed top-0 w-full z-50 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60", className)}>
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Logo />
 
