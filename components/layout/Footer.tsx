@@ -40,18 +40,18 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-background border-t">
+    <footer className="bg-gray-900 border-t border-gray-800">
       <div className="container px-4 py-12 mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <h3 className="font-semibold">EZLift</h3>
+            <h3 className="font-semibold text-white">EZLift</h3>
             <div className="flex space-x-4">
               <Link
                 href={BRAND.links.social.x}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-gray-400 hover:text-white transition-colors"
               >
                 <XIcon className="h-5 w-5" />
                 <span className="sr-only">X (formerly Twitter)</span>
@@ -60,7 +60,7 @@ export function Footer() {
                 href={BRAND.links.social.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-gray-400 hover:text-white transition-colors"
               >
                 <Instagram className="h-5 w-5" />
                 <span className="sr-only">Instagram</span>
@@ -71,13 +71,13 @@ export function Footer() {
           {/* Links */}
           {footerLinks.map((section) => (
             <div key={section.title} className="space-y-4">
-              <h3 className="font-semibold">{section.title}</h3>
+              <h3 className="font-semibold text-white">{section.title}</h3>
               <ul className="space-y-2">
                 {section.links.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-muted-foreground hover:text-primary transition-colors"
+                      className="text-gray-400 hover:text-white transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -89,7 +89,7 @@ export function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
+        <div className="mt-12 pt-8 border-t border-gray-800 text-center text-sm text-gray-400">
           <p>
             © {currentYear} {BRAND.company.name}. All rights reserved.
           </p>
