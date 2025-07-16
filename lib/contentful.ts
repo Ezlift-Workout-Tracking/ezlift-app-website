@@ -58,6 +58,22 @@ export interface ContentfulBlogPost {
   };
 }
 
+// Updated: Exercise-specific Contentful interfaces to match your content type
+export interface ContentfulExercise {
+  sys: {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  fields: {
+    id: string; // This maps to the database exercise ID
+    name: string; // Exercise name
+    slug: string; // URL slug
+    howTo?: Document; // Rich text content for instructions
+    author?: ContentfulAuthor; // Reference to author
+  };
+}
+
 // Transformed interfaces for our application
 export interface BlogAuthor {
   name: string;
@@ -75,6 +91,19 @@ export interface BlogPost {
   excerpt: string;
   content: Document;
   coverImage?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Updated: Transformed Exercise Content for our application
+export interface ExerciseContent {
+  id: string;
+  exercise_id: string; // Maps to the database exercise ID
+  title: string; // Exercise name from Contentful
+  slug: string; // URL slug
+  rich_content?: Document; // How To instructions
+  author?: BlogAuthor; // Author information
+  published: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -108,7 +137,7 @@ const transformAuthor = (author?: ContentfulAuthor): BlogAuthor => {
     name: author?.fields?.name || "Unknown Author",
     slug: author?.fields?.slug || "",
     bio: author?.fields?.bio || "",
-    avatar: avatarUrl || '/team/default-avatar.webp', // Now using the proper default avatar
+    avatar: avatarUrl || '/team/default-avatar.webp',
   };
 };
 
@@ -128,6 +157,21 @@ const transformBlogPost = (post: ContentfulBlogPost): BlogPost => {
   };
 };
 
+// Updated: Helper function to transform Contentful exercise content
+const transformExerciseContent = (content: ContentfulExercise): ExerciseContent => {
+  return {
+    id: content.sys.id,
+    exercise_id: content.fields.id, // Maps to database exercise ID
+    title: content.fields.name, // Exercise name
+    slug: content.fields.slug,
+    rich_content: content.fields.howTo, // How To instructions
+    author: content.fields.author ? transformAuthor(content.fields.author) : undefined,
+    published: true, // All entries are considered published
+    createdAt: content.sys.createdAt,
+    updatedAt: content.sys.updatedAt,
+  };
+};
+
 // Fetch all blog posts
 export async function getAllBlogPosts(): Promise<BlogPost[]> {
   try {
@@ -144,13 +188,28 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
   }
 }
 
+// Fetch all blog post slugs for static generation
+export async function getAllBlogPostSlugs(): Promise<string[]> {
+  try {
+    const response = await client.getEntries<any>({
+      content_type: 'blog',
+      order: ['-fields.publishDate'],
+    });
+
+    return response.items.map((item: any) => item.fields.slug).filter(Boolean);
+  } catch (error) {
+    console.error('Error fetching blog post slugs from Contentful:', error);
+    return [];
+  }
+}
+
 // Fetch a single blog post by slug
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
   try {
     const response = await client.getEntries<any>({
       content_type: 'blog',
       'fields.slug': slug,
-      include: 10, // Increase to maximum to include all linked assets
+      include: 10,
       limit: 1,
     });
 
@@ -165,23 +224,30 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
   }
 }
 
-// Get all blog post slugs for static generation
-export async function getAllBlogPostSlugs(): Promise<string[]> {
+// Fetch all blog posts (for preview mode)
+export async function getAllBlogPostsPreview(): Promise<BlogPost[]> {
   try {
-    const response = await client.getEntries<any>({
-      content_type: 'blog',
-      select: ['fields.slug'],
+    const previewClient = createClient({
+      space: process.env.CONTENTFUL_SPACE_ID!,
+      accessToken: process.env.CONTENTFUL_PREVIEW_ACCESS_TOKEN!,
+      host: 'preview.contentful.com',
     });
 
-    return response.items.map((item: any) => item.fields.slug);
+    const response = await previewClient.getEntries<any>({
+      content_type: 'blog',
+      order: ['-fields.publishDate'],
+      include: 10,
+    });
+
+    return response.items.map((item: any) => transformBlogPost(item));
   } catch (error) {
-    console.error('Error fetching blog post slugs:', error);
+    console.error('Error fetching preview blog posts from Contentful:', error);
     return [];
   }
 }
 
-// Preview mode helper (for draft content)
-export async function getPreviewBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+// Fetch a single blog post by slug (preview mode)
+export async function getBlogPostBySlugPreview(slug: string): Promise<BlogPost | null> {
   try {
     const previewClient = createClient({
       space: process.env.CONTENTFUL_SPACE_ID!,
@@ -192,7 +258,7 @@ export async function getPreviewBlogPostBySlug(slug: string): Promise<BlogPost |
     const response = await previewClient.getEntries<any>({
       content_type: 'blog',
       'fields.slug': slug,
-      include: 2,
+      include: 10,
       limit: 1,
     });
 
@@ -203,6 +269,94 @@ export async function getPreviewBlogPostBySlug(slug: string): Promise<BlogPost |
     return transformBlogPost(response.items[0] as any);
   } catch (error) {
     console.error(`Error fetching preview blog post with slug "${slug}":`, error);
+    return null;
+  }
+}
+
+// Updated: Exercise-specific Contentful functions
+
+// Fetch exercise content by database exercise ID
+export async function getExerciseContentByExerciseId(exerciseId: string): Promise<ExerciseContent | null> {
+  try {
+    const response = await client.getEntries<any>({
+      content_type: 'exercise', // Your content type name
+      'fields.id': exerciseId, // Maps to the database exercise ID
+      include: 10,
+      limit: 1,
+    });
+
+    if (response.items.length === 0) {
+      return null;
+    }
+
+    return transformExerciseContent(response.items[0] as any);
+  } catch (error) {
+    console.error(`Error fetching exercise content for exercise ID "${exerciseId}":`, error);
+    return null;
+  }
+}
+
+// Fetch multiple exercise contents by database exercise IDs
+export async function getMultipleExerciseContents(exerciseIds: string[]): Promise<Map<string, ExerciseContent>> {
+  const contentMap = new Map<string, ExerciseContent>();
+  
+  if (exerciseIds.length === 0) {
+    return contentMap;
+  }
+
+  try {
+    const response = await client.getEntries<any>({
+      content_type: 'exercise',
+      'fields.id[in]': exerciseIds.join(','), // Maps to database exercise IDs
+      include: 10,
+      limit: 1000, // Adjust based on your needs
+    });
+
+    response.items.forEach((item: any) => {
+      const content = transformExerciseContent(item);
+      contentMap.set(content.exercise_id, content);
+    });
+
+    return contentMap;
+  } catch (error) {
+    console.error('Error fetching multiple exercise contents:', error);
+    return contentMap;
+  }
+}
+
+// Fetch all exercise content (for admin or preview purposes)
+export async function getAllExerciseContents(): Promise<ExerciseContent[]> {
+  try {
+    const response = await client.getEntries<any>({
+      content_type: 'exercise',
+      include: 10,
+      order: ['-sys.createdAt'],
+    });
+
+    return response.items.map((item: any) => transformExerciseContent(item));
+  } catch (error) {
+    console.error('Error fetching all exercise contents:', error);
+    return [];
+  }
+}
+
+// Fetch exercise content by slug
+export async function getExerciseContentBySlug(slug: string): Promise<ExerciseContent | null> {
+  try {
+    const response = await client.getEntries<any>({
+      content_type: 'exercise',
+      'fields.slug': slug,
+      include: 10,
+      limit: 1,
+    });
+
+    if (response.items.length === 0) {
+      return null;
+    }
+
+    return transformExerciseContent(response.items[0] as any);
+  } catch (error) {
+    console.error(`Error fetching exercise content with slug "${slug}":`, error);
     return null;
   }
 }
