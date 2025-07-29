@@ -1,13 +1,18 @@
 #!/usr/bin/env node
 
 const { Client } = require('pg');
-require('dotenv').config({ path: '.env.local' });
+
+// Only load .env.local in local development (not in production/CI)
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config({ path: '.env.local' });
+}
+
+// Use secure SSL configuration based on environment
+const useSSL = process.env.NODE_ENV === 'production';
 
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: useSSL ? { rejectUnauthorized: true } : false,
 });
 
 async function examineExerciseTable() {

@@ -6,9 +6,12 @@ class DatabaseService {
   private pool: Pool;
   
   constructor() {
+    // Use secure SSL configuration based on environment
+    const useSSL = process.env.NODE_ENV === 'production';
+    
     this.pool = new Pool({
       connectionString: config.database.url,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      ssl: useSSL ? { rejectUnauthorized: true } : false,
     });
   }
 
