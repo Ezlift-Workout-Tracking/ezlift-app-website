@@ -16,6 +16,7 @@ export function Header({ hideMenu = false, className = "" }: { hideMenu?: boolea
   const menuItems = [
     { href: "#features", label: "Features" },
     { href: "#pricing", label: "Pricing" },
+    { href: "/exercise-library", label: "Exercise Library" },
     { href: "/blog", label: "Blog" },
   ];
 
@@ -23,12 +24,18 @@ export function Header({ hideMenu = false, className = "" }: { hideMenu?: boolea
     if (pathname?.startsWith("/blog/")) {
       return "/blog"; 
     }
+    if (pathname?.startsWith("/exercise-library/")) {
+      return "/exercise-library";
+    }
     return "/";
   };
 
   const getBackLabel = () => {
     if (pathname?.startsWith("/blog/")) {
       return "Back to Blog";
+    }
+    if (pathname?.startsWith("/exercise-library/")) {
+      return "Back to Exercise Library";
     }
     return "Back";
   };
