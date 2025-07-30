@@ -16,9 +16,9 @@ import { Alert, AlertDescription } from '../../../components/ui/alert';
 import { RichTextRenderer } from '../../../components/blog/RichTextRenderer';
 
 interface ExerciseDetailPageProps {
-  params: Promise<{
+  params: {
     id: string;
-  }>;
+  };
 }
 
 export async function generateMetadata({ params }: ExerciseDetailPageProps): Promise<Metadata> {
