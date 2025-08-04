@@ -28,8 +28,6 @@ jobs:
             "AWS_SECRET_ACCESS_KEY"
             "AWS_REGION"
             "AWS_S3_BUCKET_NAME"
-            "NETLIFY_AUTH_TOKEN"
-            "NETLIFY_SITE_ID"
           )
           
           # Track missing secrets
@@ -128,7 +126,4 @@ jobs:
           enable-pull-request-comment: true
           enable-commit-comment: true
           overwrites-pull-request-comment: true
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         timeout-minutes: 5
