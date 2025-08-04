@@ -45,3 +45,4 @@ temp-*.js
 temp-*.ts
 *.tmp
 *.temp
+app/sitemap.xml
