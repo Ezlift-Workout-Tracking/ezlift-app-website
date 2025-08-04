@@ -30,8 +30,8 @@ export const config = {
     },
   },
   contentful: {
-    spaceId: process.env.CONTENTFUL_SPACE_ID || 'm0q6glsfsko5', // Default from existing blog setup
-    accessToken: process.env.CONTENTFUL_ACCESS_TOKEN || 'RfjMR3puy8VANK1CsXpNff-dpCWnFN8qxZiP-HRwQjI', // Default from existing blog setup
+    spaceId: process.env.CONTENTFUL_SPACE_ID, // Default from existing blog setup
+    accessToken: process.env.CONTENTFUL_ACCESS_TOKEN || '', // Default from existing blog setup
     previewAccessToken: process.env.CONTENTFUL_PREVIEW_ACCESS_TOKEN || '',
     environment: process.env.CONTENTFUL_ENVIRONMENT || 'master',
   },
