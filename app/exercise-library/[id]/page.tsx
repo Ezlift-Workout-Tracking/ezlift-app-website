@@ -15,6 +15,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Alert, AlertDescription } from '../../../components/ui/alert';
 import { RichTextRenderer } from '../../../components/blog/RichTextRenderer';
 
+// Force dynamic rendering due to params usage
+export const dynamic = 'force-dynamic';
+
 interface ExerciseDetailPageProps {
   params: Promise<{
     id: string;

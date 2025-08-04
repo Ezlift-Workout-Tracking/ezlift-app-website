@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   keywords: 'exercise library, workout exercises, fitness, strength training, EZLift',
 };
 
+// Force dynamic rendering due to searchParams usage
+export const dynamic = 'force-dynamic';
+
 interface ExerciseLibraryPageProps {
   searchParams: Promise<{
     search?: string;

@@ -1,0 +1,26 @@
+
+> nextjs@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.1.5
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.178.34:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1399ms
+ ○ Compiling / ...
+Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+ ✓ Compiled / in 2.1s (1603 modules)
+ GET / 200 in 2361ms
+ ✓ Compiled in 218ms (799 modules)
+ ○ Compiling /exercise-library ...
+ ✓ Compiled /exercise-library in 731ms (2074 modules)
+✅ S3 service loaded for exercise media
+✅ Contentful service loaded with default credentials
+ GET /exercise-library 200 in 1868ms
+ GET /exercise-library 200 in 590ms
+ GET /exercise-library 200 in 869ms
+ GET /exercise-library 200 in 525ms

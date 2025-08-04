@@ -3,8 +3,8 @@ import { Document } from '@contentful/rich-text-types';
 
 // Contentful client configuration
 const client = createClient({
-  space: process.env.CONTENTFUL_SPACE_ID! || "m0q6glsfsko5",
-  accessToken: process.env.CONTENTFUL_ACCESS_TOKEN! || "RfjMR3puy8VANK1CsXpNff-dpCWnFN8qxZiP-HRwQjI",
+  space: process.env.CONTENTFUL_SPACE_ID! || " ",
+  accessToken: process.env.CONTENTFUL_ACCESS_TOKEN! || " ",
 });
 
 // TypeScript interfaces for Contentful data
