@@ -15,10 +15,113 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Validate required secrets
+        run: |
+          echo "Validating required environment variables..."
+          
+          # List of required secrets
+          REQUIRED_SECRETS=(
+            "CONTENTFUL_SPACE_ID"
+            "CONTENTFUL_ACCESS_TOKEN"
+            "DATABASE_URL"
+            "AWS_ACCESS_KEY_ID"
+            "AWS_SECRET_ACCESS_KEY"
+            "AWS_REGION"
+            "AWS_S3_BUCKET_NAME"
+            "NETLIFY_AUTH_TOKEN"
+            "NETLIFY_SITE_ID"
+          )
+          
+          # Track missing secrets
+          MISSING_SECRETS=()
+          
+          # Check each required secret
+          for secret in "${REQUIRED_SECRETS[@]}"; do
+            if [ -z "${!secret}" ]; then
+              MISSING_SECRETS+=("$secret")
+              echo "❌ Missing: $secret"
+            else
+              echo "✅ Found: $secret"
+            fi
+          done
+          
+          # Fail if any secrets are missing
+          if [ ${#MISSING_SECRETS[@]} -ne 0 ]; then
+            echo ""
+            echo "🚨 ERROR: The following required secrets are missing:"
+            for secret in "${MISSING_SECRETS[@]}"; do
+              echo "  - $secret"
+            done
+            echo ""
+            echo "Please add these secrets to your GitHub repository settings:"
+            echo "Settings > Secrets and variables > Actions > Repository secrets"
+            exit 1
+          fi
+          
+          echo ""
+          echo "🎉 All required secrets are present!"
+        env:
+          CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
+          CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          npm install --package-lock-only
+          npm ci
+
+      - name: Validate secrets before build
+        run: |
+          echo "Performing additional secret validation..."
+          
+          # Validate Contentful secrets format
+          if [[ ! "$CONTENTFUL_SPACE_ID" =~ ^[a-zA-Z0-9]{12}$ ]]; then
+            echo "⚠️  Warning: CONTENTFUL_SPACE_ID format seems incorrect (should be 12 alphanumeric characters)"
+          fi
+          
+          # Validate AWS region format
+          if [[ ! "$AWS_REGION" =~ ^[a-z0-9-]+$ ]]; then
+            echo "⚠️  Warning: AWS_REGION format seems incorrect"
+          fi
+          
+          # Check if DATABASE_URL starts with expected protocol
+          if [[ ! "$DATABASE_URL" =~ ^(postgres|postgresql|mysql|sqlite):// ]]; then
+            echo "⚠️  Warning: DATABASE_URL doesn't start with expected database protocol"
+          fi
+          
+          echo "Secret validation completed!"
+        env:
+          CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Build project
+        run: npm run build
+        env:
+          CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
+          CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
+
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2.1
         with:
-          publish-dir: "."
+          publish-dir: "./out"
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: "Deploy from GitHub Actions"
@@ -28,11 +131,4 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-          CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
-          CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
-        timeout-minutes: 15
+        timeout-minutes: 5
