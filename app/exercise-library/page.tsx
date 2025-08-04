@@ -21,14 +21,14 @@ export const metadata: Metadata = {
 };
 
 interface ExerciseLibraryPageProps {
-  searchParams: {
+  searchParams: Promise<{
     search?: string;
     type?: string;
     muscle?: string;
     movement?: string;
     difficulty?: string;
     page?: string;
-  };
+  }>;
 }
 
 const ExerciseLibraryPage: React.FC<ExerciseLibraryPageProps> = async ({
