@@ -6,12 +6,36 @@ class DatabaseService {
   private pool: Pool;
   
   constructor() {
-    // Use secure SSL configuration based on environment
-    const useSSL = process.env.NODE_ENV === 'production';
+    // Configure SSL based on environment and DATABASE_URL
+    const isProduction = process.env.NODE_ENV === 'production';
+    const databaseUrl = config.database.url;
+    
+    let sslConfig;
+    
+    if (isProduction && databaseUrl) {
+      // In production, use SSL but don't reject unauthorized certificates
+      // This is common for managed database services like Heroku, Railway, etc.
+      sslConfig = { rejectUnauthorized: false };
+    } else if (databaseUrl && databaseUrl.includes('sslmode=require')) {
+      // If the connection string explicitly requires SSL
+      sslConfig = { rejectUnauthorized: false };
+    } else {
+      // Local development - no SSL
+      sslConfig = false;
+    }
     
     this.pool = new Pool({
-      connectionString: config.database.url,
-      ssl: useSSL ? { rejectUnauthorized: true } : false,
+      connectionString: databaseUrl,
+      ssl: sslConfig,
+      // Additional connection options for better reliability
+      max: 20, // Maximum number of clients in the pool
+      idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+      connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
+    });
+
+    // Handle pool errors
+    this.pool.on('error', (err) => {
+      console.error('Unexpected error on idle client', err);
     });
   }
 
@@ -367,4 +391,4 @@ class DatabaseService {
   }
 }
 
-export default new DatabaseService(); 
+export default new DatabaseService();

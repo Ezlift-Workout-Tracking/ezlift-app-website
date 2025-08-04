@@ -116,6 +116,35 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
 
+      - name: Debug built files
+        run: |
+          echo "Checking if environment variables were baked into the build..."
+          
+          # Check if any environment variables are present in built files
+          if [ -d "./out" ]; then
+            echo "Build output directory exists"
+            
+            # Look for environment variable references in built files (be careful not to expose secrets)
+            echo "Checking for CONTENTFUL_SPACE_ID presence..."
+            if grep -r "CONTENTFUL_SPACE_ID" ./out/ >/dev/null 2>&1; then
+              echo "✅ CONTENTFUL_SPACE_ID found in built files"
+            else
+              echo "❌ CONTENTFUL_SPACE_ID not found in built files"
+            fi
+            
+            echo "Checking for AWS_REGION presence..."
+            if grep -r "AWS_REGION" ./out/ >/dev/null 2>&1; then
+              echo "✅ AWS_REGION found in built files"
+            else
+              echo "❌ AWS_REGION not found in built files"
+            fi
+            
+            echo "Built files structure:"
+            find ./out -type f -name "*.html" -o -name "*.js" | head -10
+          else
+            echo "❌ Build output directory not found"
+          fi
+
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2.1
         with:
