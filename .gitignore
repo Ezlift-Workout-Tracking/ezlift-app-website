@@ -45,4 +45,7 @@ temp-*.js
 temp-*.ts
 *.tmp
 *.temp
+
+# Documentation files
+ENVIRONMENT_SETUP.md
 app/sitemap.xml

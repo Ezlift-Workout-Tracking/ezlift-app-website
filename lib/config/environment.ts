@@ -8,10 +8,10 @@
  * - DATABASE_URL: PostgreSQL connection string
  * 
  * Optional environment variables:
- * - AWS_ACCESS_KEY_ID: AWS access key (for S3 media)
- * - AWS_SECRET_ACCESS_KEY: AWS secret key (for S3 media)
- * - AWS_REGION: AWS region (e.g., us-east-1)
- * - AWS_S3_BUCKET_NAME: S3 bucket for exercise media (images and videos)
+ * - EZLIFT_AWS_ACCESS_KEY_ID: AWS access key (for S3 media)
+ * - EZLIFT_AWS_SECRET_ACCESS_KEY: AWS secret key (for S3 media)
+ * - EZLIFT_AWS_REGION: AWS region (e.g., us-east-1)
+ * - EZLIFT_AWS_S3_BUCKET_NAME: S3 bucket for exercise media (images and videos)
  * - CONTENTFUL_SPACE_ID: Contentful space ID (for rich content)
  * - CONTENTFUL_ACCESS_TOKEN: Contentful access token (for rich content)
  * - CONTENTFUL_ENVIRONMENT: Contentful environment (default: master)
@@ -35,11 +35,11 @@ export const config = {
     url: getEnvVar('DATABASE_URL'),
   },
   aws: {
-    accessKeyId: getEnvVar('AWS_ACCESS_KEY_ID'),
-    secretAccessKey: getEnvVar('AWS_SECRET_ACCESS_KEY'),
-    region: getEnvVar('AWS_REGION', 'us-east-1'),
+    accessKeyId: getEnvVar('EZLIFT_AWS_ACCESS_KEY_ID'),
+    secretAccessKey: getEnvVar('EZLIFT_AWS_SECRET_ACCESS_KEY'),
+    region: getEnvVar('EZLIFT_AWS_REGION', 'us-east-1'),
     s3: {
-      bucketName: getEnvVar('AWS_S3_BUCKET_NAME'),
+      bucketName: getEnvVar('EZLIFT_AWS_S3_BUCKET_NAME'),
       // Legacy support for separate buckets (deprecated)
       bucketImages: getEnvVar('AWS_S3_BUCKET_IMAGES'),
       bucketVideos: getEnvVar('AWS_S3_BUCKET_VIDEOS'),
