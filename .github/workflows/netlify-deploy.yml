@@ -24,10 +24,10 @@ jobs:
             "CONTENTFUL_SPACE_ID"
             "CONTENTFUL_ACCESS_TOKEN"
             "DATABASE_URL"
-            "AWS_ACCESS_KEY_ID"
-            "AWS_SECRET_ACCESS_KEY"
-            "AWS_REGION"
-            "AWS_S3_BUCKET_NAME"
+            "EZLIFT_EZLIFT_AWS_ACCESS_KEY_ID"
+            "EZLIFT_EZLIFT_AWS_SECRET_ACCESS_KEY"
+            "EZLIFT_EZLIFT_AWS_REGION"
+            "EZLIFT_EZLIFT_AWS_S3_BUCKET_NAME"
           )
           
           # Track missing secrets
@@ -62,10 +62,10 @@ jobs:
           CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
           CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
+          EZLIFT_AWS_ACCESS_KEY_ID: ${{ secrets.EZLIFT_AWS_ACCESS_KEY_ID }}
+          EZLIFT_AWS_SECRET_ACCESS_KEY: ${{ secrets.EZLIFT_AWS_SECRET_ACCESS_KEY }}
+          EZLIFT_AWS_REGION: ${{ secrets.EZLIFT_AWS_REGION }}
+          EZLIFT_AWS_S3_BUCKET_NAME: ${{ secrets.EZLIFT_AWS_S3_BUCKET_NAME }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
@@ -90,8 +90,8 @@ jobs:
           fi
           
           # Validate AWS region format
-          if [[ ! "$AWS_REGION" =~ ^[a-z0-9-]+$ ]]; then
-            echo "⚠️  Warning: AWS_REGION format seems incorrect"
+          if [[ ! "$EZLIFT_EZLIFT_AWS_REGION" =~ ^[a-z0-9-]+$ ]]; then
+            echo "⚠️  Warning: EZLIFT_EZLIFT_AWS_REGION format seems incorrect"
           fi
           
           # Check if DATABASE_URL starts with expected protocol
@@ -102,7 +102,7 @@ jobs:
           echo "Secret validation completed!"
         env:
           CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+          EZLIFT_EZLIFT_AWS_REGION: ${{ secrets.EZLIFT_EZLIFT_AWS_REGION }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Build project
@@ -111,10 +111,10 @@ jobs:
           CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
           CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
+          EZLIFT_AWS_ACCESS_KEY_ID: ${{ secrets.EZLIFT_AWS_ACCESS_KEY_ID }}
+          EZLIFT_AWS_SECRET_ACCESS_KEY: ${{ secrets.EZLIFT_AWS_SECRET_ACCESS_KEY }}
+          EZLIFT_AWS_REGION: ${{ secrets.EZLIFT_AWS_REGION }}
+          EZLIFT_AWS_S3_BUCKET_NAME: ${{ secrets.EZLIFT_AWS_S3_BUCKET_NAME }}
 
       - name: Debug built files
         run: |
@@ -132,11 +132,11 @@ jobs:
               echo "❌ CONTENTFUL_SPACE_ID not found in built files"
             fi
             
-            echo "Checking for AWS_REGION presence..."
-            if grep -r "AWS_REGION" ./out/ >/dev/null 2>&1; then
-              echo "✅ AWS_REGION found in built files"
+            echo "Checking for EZLIFT_EZLIFT_AWS_REGION presence..."
+            if grep -r "EZLIFT_EZLIFT_AWS_REGION" ./out/ >/dev/null 2>&1; then
+              echo "✅ EZLIFT_EZLIFT_AWS_REGION found in built files"
             else
-              echo "❌ AWS_REGION not found in built files"
+              echo "❌ EZLIFT_EZLIFT_AWS_REGION not found in built files"
             fi
             
             echo "Built files structure:"
