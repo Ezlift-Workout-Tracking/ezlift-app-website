@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { config } from '../config/environment';
+import { DEFAULT_PAGE_SIZE } from '../constants/pagination';
 import { DatabaseExercise, ExerciseFilters, FilterOptions } from '../../types/exercise';
 
 class DatabaseService {
@@ -43,7 +44,7 @@ class DatabaseService {
   async getExercises(
     filters: ExerciseFilters = {},
     page: number = 1,
-    limit: number = 20
+    limit: number = DEFAULT_PAGE_SIZE
   ): Promise<{ exercises: DatabaseExercise[], total: number }> {
     const offset = (page - 1) * limit;
     
@@ -227,7 +228,7 @@ class DatabaseService {
   async searchExercises(
     searchTerm: string,
     page: number = 1,
-    limit: number = 20
+    limit: number = DEFAULT_PAGE_SIZE
   ): Promise<{ exercises: DatabaseExercise[], total: number }> {
     const filters: ExerciseFilters = { search: searchTerm };
     return this.getExercises(filters, page, limit);
@@ -237,7 +238,7 @@ class DatabaseService {
   async getExercisesByMuscleGroup(
     muscleGroup: string,
     page: number = 1,
-    limit: number = 20
+    limit: number = DEFAULT_PAGE_SIZE
   ): Promise<{ exercises: DatabaseExercise[], total: number }> {
     const filters: ExerciseFilters = { primaryMuscleGroup: muscleGroup };
     return this.getExercises(filters, page, limit);
@@ -247,7 +248,7 @@ class DatabaseService {
   async getExercisesByType(
     exerciseType: string,
     page: number = 1,
-    limit: number = 20
+    limit: number = DEFAULT_PAGE_SIZE
   ): Promise<{ exercises: DatabaseExercise[], total: number }> {
     const filters: ExerciseFilters = { exerciseType };
     return this.getExercises(filters, page, limit);
@@ -257,7 +258,7 @@ class DatabaseService {
   async getExercisesByForce(
     force: 'Push' | 'Pull' | 'Static',
     page: number = 1,
-    limit: number = 20
+    limit: number = DEFAULT_PAGE_SIZE
   ): Promise<{ exercises: DatabaseExercise[], total: number }> {
     const filters: ExerciseFilters = { force };
     return this.getExercises(filters, page, limit);
@@ -266,7 +267,7 @@ class DatabaseService {
   // Get user-created exercises (READ-ONLY)
   async getUserCreatedExercises(
     page: number = 1,
-    limit: number = 20
+    limit: number = DEFAULT_PAGE_SIZE
   ): Promise<{ exercises: DatabaseExercise[], total: number }> {
     // Use a direct query for user-created exercises (userId IS NOT NULL)
     const offset = (page - 1) * limit;
