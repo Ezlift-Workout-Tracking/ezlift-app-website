@@ -103,34 +103,24 @@ function generateStructuredData(exercises: any[], filters: Filters, page: number
     "itemListElement": exercises.map((exercise, index) => ({
       "@type": "ListItem",
       "position": (page - 1) * 15 + index + 1,
+      "url": `${baseUrl}/${exercise.content?.slug || exercise.id}`,
       "item": {
-        "@type": "ExerciseAction",
+        "@type": "Exercise",
         "name": exercise.content?.title || exercise.name,
-        "description": `Learn proper form and technique for ${exercise.name}. Target your ${exercise.primaryMuscleGroup} with this effective exercise.`,
-        "url": `${baseUrl}/${exercise.content?.slug || exercise.id}`,
-        "image": exercise.media?.imageUrl || undefined,
-        "muscleGroup": exercise.primaryMuscleGroup,
-        "exerciseType": exercise.exerciseType,
-        "equipment": exercise.equipment || undefined,
-        "difficulty": exercise.level || undefined,
-        "bodyLocation": exercise.primaryMuscleGroup,
-        "additionalProperty": [
-          ...(exercise.otherMuscleGroups || []).map((muscle: string) => ({
-            "@type": "PropertyValue",
-            "name": "Secondary Muscle Group",
-            "value": muscle
-          })),
-          exercise.force ? {
-            "@type": "PropertyValue", 
-            "name": "Movement Type",
-            "value": exercise.force
-          } : null,
-          exercise.mechanic ? {
-            "@type": "PropertyValue",
-            "name": "Mechanic",
-            "value": exercise.mechanic
-          } : null
-        ].filter(Boolean)
+        "exerciseType": exercise.exerciseType || "Strength",
+        "muscleWorked": [
+          exercise.primaryMuscleGroup,
+          ...(exercise.otherMuscleGroups || [])
+        ].filter(Boolean),
+        "equipment": exercise.equipment || "Body Weight",
+        "difficulty": exercise.level || "Beginner",
+        "instructions": exercise.content?.description ? 
+          exercise.content.description.substring(0, 200) + "..." : 
+          `Learn proper form and technique for ${exercise.name}. Target your ${exercise.primaryMuscleGroup} with this effective exercise.`,
+        "image": exercise.media?.imageUrl ? 
+          `https://ezlift.app${exercise.media.imageUrl}` : 
+          "https://ezlift.app/images/exercise-placeholder.svg",
+        "url": `${baseUrl}/${exercise.content?.slug || exercise.id}`
       }
     }))
   };
