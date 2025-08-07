@@ -13,6 +13,7 @@ import { Button } from '../../components/ui/button';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { ExerciseFilters as Filters, FilterOptions } from '../../types/exercise';
 import PaginationClient from '@/components/exercise/PaginationClient';
+import { EXERCISE_LIBRARY_PAGE_SIZE } from '../../lib/constants/pagination';
 
 export const metadata: Metadata = {
   title: 'Exercise Library | EZLift',
@@ -43,7 +44,7 @@ const ExerciseLibraryPage: React.FC<ExerciseLibraryPageProps> = async ({
 
     // Parse search parameters
     const page = parseInt(resolvedSearchParams.page || '1');
-    const limit = 24; // 24 exercises per page for nice grid layout
+    const limit = EXERCISE_LIBRARY_PAGE_SIZE; // 15 exercises per page for 3×5 grid layout
 
     const filters: Filters = {
       search: resolvedSearchParams.search || undefined,
@@ -65,6 +66,54 @@ const ExerciseLibraryPage: React.FC<ExerciseLibraryPageProps> = async ({
 
     const { exercises, total } = exerciseResponse;
     const totalPages = Math.ceil(total / limit);
+
+    // Handle out-of-range pages - redirect to last valid page if current page exceeds total pages
+    if (page > totalPages && totalPages > 0) {
+      const params = new URLSearchParams();
+      
+      // Preserve filters
+      if (filters.search) params.set('search', filters.search);
+      if (filters.exerciseType) params.set('type', filters.exerciseType);
+      if (filters.primaryMuscleGroup) params.set('muscle', filters.primaryMuscleGroup);
+      if (filters.force) params.set('movement', filters.force);
+      if (filters.level) params.set('difficulty', filters.level);
+      
+      // Set to last valid page
+      if (totalPages > 1) params.set('page', totalPages.toString());
+      
+      const redirectURL = `/exercise-library${params.toString() ? '?' + params.toString() : ''}`;
+      
+      // For server-side redirect in Next.js 15, we'll use a different approach
+      // Since we can't use redirect() here directly, we'll render a client-side redirect
+      return (
+        <>
+          <Header hideMenu className="bg-gray-900 !bg-opacity-100 !backdrop-blur-none supports-[backdrop-filter]:bg-gray-900" />
+          <div className="flex flex-col min-h-screen bg-gray-100 text-gray-900">
+            <main className="flex-1 py-24">
+              <div className="container px-4 mx-auto max-w-7xl">
+                <div className="max-w-4xl mx-auto">
+                  <EmptyState
+                    icon={<Dumbbell className="w-12 h-12 text-gray-400" />}
+                    title="Page Not Found"
+                    description={`Page ${page} doesn't exist. There are only ${totalPages} page${totalPages === 1 ? '' : 's'} of results.`}
+                    action={
+                      <Button 
+                        variant="outline" 
+                        asChild
+                        className="mt-4"
+                      >
+                        <a href={redirectURL}>Go to Last Page</a>
+                      </Button>
+                    }
+                  />
+                </div>
+              </div>
+            </main>
+          </div>
+          <Footer />
+        </>
+      );
+    }
 
     return (
       <>
