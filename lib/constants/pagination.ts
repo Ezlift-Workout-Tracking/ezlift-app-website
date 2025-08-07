@@ -4,8 +4,12 @@
  * Single source of truth for pagination configuration
  */
 
-// Exercise library page size - displays in 3×5 grid (15 exercises per page)
-export const EXERCISE_LIBRARY_PAGE_SIZE = 15;
+// Page size configurations
+export const PAGE_SIZES = {
+  EXERCISE_LIBRARY: 15, // 3×5 grid layout
+  DEFAULT: 20,          // Default for other services
+} as const;
 
-// Default page size for other services if not specified
-export const DEFAULT_PAGE_SIZE = 20;
+// Legacy exports for backward compatibility
+export const EXERCISE_LIBRARY_PAGE_SIZE = PAGE_SIZES.EXERCISE_LIBRARY;
+export const DEFAULT_PAGE_SIZE = PAGE_SIZES.DEFAULT;

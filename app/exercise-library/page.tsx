@@ -21,6 +21,57 @@ export const metadata: Metadata = {
   keywords: 'exercise library, workout exercises, fitness, strength training, EZLift',
 };
 
+// Generate SEO pagination metadata
+function generatePaginationMetadata(page: number, totalPages: number, filters: Filters): Metadata {
+  const baseUrl = 'https://ezlift.app/exercise-library';
+  const params = new URLSearchParams();
+  
+  // Add filter params
+  if (filters.search) params.set('search', filters.search);
+  if (filters.exerciseType) params.set('type', filters.exerciseType);
+  if (filters.primaryMuscleGroup) params.set('muscle', filters.primaryMuscleGroup);
+  if (filters.force) params.set('movement', filters.force);
+  if (filters.level) params.set('difficulty', filters.level);
+  
+  const queryString = params.toString();
+  const baseUrlWithQuery = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  
+  const links: { rel: string; href: string }[] = [];
+  
+  // Canonical link
+  if (page > 1) {
+    params.set('page', page.toString());
+    links.push({ rel: 'canonical', href: `${baseUrl}?${params.toString()}` });
+  } else {
+    links.push({ rel: 'canonical', href: baseUrlWithQuery });
+  }
+  
+  // Previous page link
+  if (page > 1) {
+    const prevParams = new URLSearchParams(params);
+    if (page === 2) {
+      prevParams.delete('page'); // First page doesn't need page param
+    } else {
+      prevParams.set('page', (page - 1).toString());
+    }
+    const prevUrl = prevParams.toString() ? `${baseUrl}?${prevParams.toString()}` : baseUrl;
+    links.push({ rel: 'prev', href: prevUrl });
+  }
+  
+  // Next page link
+  if (page < totalPages) {
+    const nextParams = new URLSearchParams(params);
+    nextParams.set('page', (page + 1).toString());
+    links.push({ rel: 'next', href: `${baseUrl}?${nextParams.toString()}` });
+  }
+  
+  return {
+    other: {
+      'link': links.map(link => `<${link.href}>; rel="${link.rel}"`).join(', ')
+    }
+  };
+}
+
 // Force dynamic rendering due to searchParams usage
 export const dynamic = 'force-dynamic';
 
@@ -83,8 +134,8 @@ const ExerciseLibraryPage: React.FC<ExerciseLibraryPageProps> = async ({
       
       const redirectURL = `/exercise-library${params.toString() ? '?' + params.toString() : ''}`;
       
-      // For server-side redirect in Next.js 15, we'll use a different approach
-      // Since we can't use redirect() here directly, we'll render a client-side redirect
+      // For server-side redirect in Next.js, we'll render a client-side redirect
+      // since we can't use redirect() here directly in this context
       return (
         <>
           <Header hideMenu className="bg-gray-900 !bg-opacity-100 !backdrop-blur-none supports-[backdrop-filter]:bg-gray-900" />
