@@ -82,6 +82,81 @@ interface ExerciseLibraryPageProps {
   }>;
 }
 
+// Generate structured data for rich search results
+function generateStructuredData(exercises: any[], filters: Filters, page: number, totalPages: number, total: number) {
+  const baseUrl = 'https://ezlift.app/exercise-library';
+  
+  // ItemList schema for the exercise listing page
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": filters.primaryMuscleGroup ? `${filters.primaryMuscleGroup} Exercises` : 
+            filters.exerciseType ? `${filters.exerciseType} Exercises` :
+            filters.search ? `"${filters.search}" Exercise Search Results` :
+            "Exercise Library",
+    "description": filters.primaryMuscleGroup ? `Complete list of ${filters.primaryMuscleGroup.toLowerCase()} exercises with proper form instructions and videos.` :
+                   filters.exerciseType ? `Browse ${filters.exerciseType.toLowerCase()} exercises with detailed instructions.` :
+                   filters.search ? `Search results for "${filters.search}" in our comprehensive exercise database.` :
+                   "Comprehensive exercise library with detailed instructions, images, and videos for proper form.",
+    "numberOfItems": total,
+    "url": baseUrl,
+    "itemListElement": exercises.map((exercise, index) => ({
+      "@type": "ListItem",
+      "position": (page - 1) * 15 + index + 1,
+      "item": {
+        "@type": "ExerciseAction",
+        "name": exercise.content?.title || exercise.name,
+        "description": `Learn proper form and technique for ${exercise.name}. Target your ${exercise.primaryMuscleGroup} with this effective exercise.`,
+        "url": `${baseUrl}/${exercise.content?.slug || exercise.id}`,
+        "image": exercise.media?.imageUrl || undefined,
+        "muscleGroup": exercise.primaryMuscleGroup,
+        "exerciseType": exercise.exerciseType,
+        "equipment": exercise.equipment || undefined,
+        "difficulty": exercise.level || undefined,
+        "bodyLocation": exercise.primaryMuscleGroup,
+        "additionalProperty": [
+          ...(exercise.otherMuscleGroups || []).map((muscle: string) => ({
+            "@type": "PropertyValue",
+            "name": "Secondary Muscle Group",
+            "value": muscle
+          })),
+          exercise.force ? {
+            "@type": "PropertyValue", 
+            "name": "Movement Type",
+            "value": exercise.force
+          } : null,
+          exercise.mechanic ? {
+            "@type": "PropertyValue",
+            "name": "Mechanic",
+            "value": exercise.mechanic
+          } : null
+        ].filter(Boolean)
+      }
+    }))
+  };
+
+  // WebSite schema for search functionality
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "EZLift Exercise Library",
+    "url": "https://ezlift.app",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://ezlift.app/exercise-library?search={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  };
+
+  return {
+    itemList: itemListSchema,
+    website: websiteSchema
+  };
+}
+
 // Generate dynamic metadata for each page
 export async function generateMetadata({ searchParams }: ExerciseLibraryPageProps): Promise<Metadata> {
   try {
@@ -124,11 +199,35 @@ export async function generateMetadata({ searchParams }: ExerciseLibraryPageProp
       description += ` Page ${page} of ${totalPages}.`;
     }
 
-    // Combine base metadata with pagination metadata
+    // Combine base metadata with pagination metadata and OpenGraph
     const baseMetadata: Metadata = {
       title,
       description,
       keywords: 'exercise library, workout exercises, fitness, strength training, EZLift',
+      openGraph: {
+        title,
+        description,
+        type: 'website',
+        url: `https://ezlift.app/exercise-library${page > 1 ? `?page=${page}` : ''}${filters.search ? `${page > 1 ? '&' : '?'}search=${encodeURIComponent(filters.search)}` : ''}${filters.primaryMuscleGroup ? `${(page > 1 || filters.search) ? '&' : '?'}muscle=${encodeURIComponent(filters.primaryMuscleGroup)}` : ''}`,
+        siteName: 'EZLift',
+        images: [
+          {
+            url: 'https://ezlift.app/app-preview.webp',
+            width: 1200,
+            height: 630,
+            alt: title,
+          },
+        ],
+        locale: 'en_US',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: ['https://ezlift.app/app-preview.webp'],
+        creator: '@ezliftapp',
+        site: '@ezliftapp',
+      },
     };
 
     const paginationMetadata = generatePaginationMetadata(page, totalPages, filters);
@@ -227,9 +326,21 @@ const ExerciseLibraryPage: React.FC<ExerciseLibraryPageProps> = async ({
       );
     }
 
+    // Generate structured data for this page
+    const structuredData = generateStructuredData(exercises, filters, page, totalPages, total);
+
     return (
       <>
         <Header hideMenu className="bg-gray-900 !bg-opacity-100 !backdrop-blur-none supports-[backdrop-filter]:bg-gray-900" />
+        
+        {/* JSON-LD Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([structuredData.itemList, structuredData.website])
+          }}
+        />
+        
         <div className="flex flex-col min-h-screen bg-gray-100 text-gray-900">
           <main className="flex-1 py-24">
             <div className="container px-4 mx-auto max-w-7xl">
