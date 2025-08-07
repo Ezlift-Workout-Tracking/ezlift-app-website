@@ -15,11 +15,7 @@ import { ExerciseFilters as Filters, FilterOptions } from '../../types/exercise'
 import PaginationClient from '@/components/exercise/PaginationClient';
 import { EXERCISE_LIBRARY_PAGE_SIZE } from '../../lib/constants/pagination';
 
-export const metadata: Metadata = {
-  title: 'Exercise Library | EZLift',
-  description: 'Browse our comprehensive exercise library with detailed instructions, images, and videos.',
-  keywords: 'exercise library, workout exercises, fitness, strength training, EZLift',
-};
+// Static metadata is now replaced by dynamic generateMetadata function below
 
 // Generate SEO pagination metadata
 function generatePaginationMetadata(page: number, totalPages: number, filters: Filters): Metadata {
@@ -84,6 +80,71 @@ interface ExerciseLibraryPageProps {
     difficulty?: string;
     page?: string;
   }>;
+}
+
+// Generate dynamic metadata for each page
+export async function generateMetadata({ searchParams }: ExerciseLibraryPageProps): Promise<Metadata> {
+  try {
+    const resolvedSearchParams = await searchParams;
+    const page = parseInt(resolvedSearchParams.page || '1');
+    
+    const filters: Filters = {
+      search: resolvedSearchParams.search || undefined,
+      exerciseType: resolvedSearchParams.type || undefined,
+      primaryMuscleGroup: resolvedSearchParams.muscle || undefined,
+      force: resolvedSearchParams.movement as any || undefined,
+      level: resolvedSearchParams.difficulty as any || undefined,
+    };
+
+    // Get total count for pagination metadata
+    const exerciseResponse = await exerciseDataService.getExercises(filters, page, EXERCISE_LIBRARY_PAGE_SIZE);
+    const totalPages = Math.ceil((exerciseResponse?.total || 0) / EXERCISE_LIBRARY_PAGE_SIZE);
+
+    // Generate dynamic title and description based on filters and page
+    let title = 'Exercise Library | EZLift';
+    let description = 'Browse our comprehensive exercise library with detailed instructions, images, and videos.';
+
+    if (filters.primaryMuscleGroup) {
+      title = `${filters.primaryMuscleGroup} Exercises | EZLift`;
+      description = `Discover ${filters.primaryMuscleGroup.toLowerCase()} exercises with proper form instructions and videos.`;
+    }
+    
+    if (filters.exerciseType) {
+      title = `${filters.exerciseType} Exercises | EZLift`;
+      description = `Browse ${filters.exerciseType.toLowerCase()} exercises with detailed instructions.`;
+    }
+
+    if (filters.search) {
+      title = `"${filters.search}" Exercises | EZLift`;
+      description = `Search results for "${filters.search}" in our exercise library.`;
+    }
+
+    if (page > 1) {
+      title += ` - Page ${page}`;
+      description += ` Page ${page} of ${totalPages}.`;
+    }
+
+    // Combine base metadata with pagination metadata
+    const baseMetadata: Metadata = {
+      title,
+      description,
+      keywords: 'exercise library, workout exercises, fitness, strength training, EZLift',
+    };
+
+    const paginationMetadata = generatePaginationMetadata(page, totalPages, filters);
+    
+    return {
+      ...baseMetadata,
+      ...paginationMetadata,
+    };
+  } catch (error) {
+    console.error('Error generating exercise library metadata:', error);
+    return {
+      title: 'Exercise Library | EZLift',
+      description: 'Browse our comprehensive exercise library with detailed instructions, images, and videos.',
+      keywords: 'exercise library, workout exercises, fitness, strength training, EZLift',
+    };
+  }
 }
 
 const ExerciseLibraryPage: React.FC<ExerciseLibraryPageProps> = async ({
