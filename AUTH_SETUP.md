@@ -33,6 +33,8 @@ In the Firebase console, go to Authentication > Sign-in method and enable:
 
 ### Environment Variables
 
+All Firebase config is sourced from environment variables. Nothing is hard-coded.
+
 Create a `.env.local` file in your project root with:
 
 ```env
@@ -43,10 +45,19 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
 NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abcdef123456
+# Optional if using analytics
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
 
 # Backend Configuration (Server-side only)
 BACKEND_BASE_URL=http://localhost:3001
+
+# Optional: Firebase Admin SDK (server-only). Only set if used by API routes/functions
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your_project_id.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEv...\n-----END PRIVATE KEY-----\n"
 ```
+
+Production (Netlify): Set the same variables in Netlify Site settings → Build & Deploy → Environment variables. Do not rely on GitHub secrets at runtime.
 
 ## 2. Backend API Setup
 

@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+// Ensure Node.js runtime if any Admin SDK is introduced here in future
+export const runtime = 'nodejs';
 import { verifyWithBackend, setSessionCookies, clearSessionCookies } from '@/lib/auth/session';
 
 export async function POST(request: NextRequest) {

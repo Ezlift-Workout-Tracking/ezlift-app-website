@@ -12,7 +12,8 @@ import {
   onAuthStateChanged,
   signOut,
 } from 'firebase/auth';
-import { auth } from '@/lib/config/firebase';
+import { getAuth } from 'firebase/auth';
+import { firebaseApp } from '@/lib/firebase/client';
 
 // Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
@@ -24,6 +25,8 @@ googleProvider.setCustomParameters({
 const appleProvider = new OAuthProvider('apple.com');
 appleProvider.addScope('email');
 appleProvider.addScope('name');
+
+const auth = getAuth(firebaseApp);
 
 export const signInWithEmail = async (email: string, password: string) => {
   try {
