@@ -71,7 +71,8 @@ export function SignupForm() {
         // Check for both Google and Apple redirects
         let user = await completeRedirectSignIn();
         if (!user) {
-          user = await completeAppleRedirect();
+          const appleResult = await completeAppleRedirect();
+          user = appleResult?.user || null;
         }
         if (!active || !user) return;
         const idToken = await user.getIdToken();

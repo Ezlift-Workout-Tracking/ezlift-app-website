@@ -43,7 +43,7 @@ export async function completeAppleRedirect() {
     if (result && result.user) {
       console.log('Apple redirect completed successfully:', result.user.email);
     }
-    return result;
+    return result; // Returns UserCredential | null
   } catch (error) {
     console.error('Error completing Apple redirect:', error);
     return null;
