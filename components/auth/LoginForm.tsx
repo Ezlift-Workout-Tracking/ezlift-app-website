@@ -11,10 +11,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, Mail, Lock, Chrome } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Chrome, Apple } from "lucide-react";
 import Link from "next/link";
 import { loginSchema, type LoginFormData } from "@/lib/auth/schemas";
 import { signInWithEmail, signInWithGoogle, completeRedirectSignIn } from "@/lib/auth/firebaseClient";
+import { signInWithApple, completeAppleRedirect, handleAccountExistsError, getUserEmail } from "@/lib/auth/signInWithApple";
 import { getErrorMessages, isPopupBlockedError } from "@/lib/auth/errorMap";
 
 export function LoginForm() {
@@ -42,7 +43,11 @@ export function LoginForm() {
     let active = true;
     (async () => {
       try {
-        const user = await completeRedirectSignIn();
+        // Check for both Google and Apple redirects
+        let user = await completeRedirectSignIn();
+        if (!user) {
+          user = await completeAppleRedirect();
+        }
         if (!active || !user) return;
         const idToken = await user.getIdToken();
         const response = await fetch("/api/auth/session", {
@@ -102,6 +107,83 @@ export function LoginForm() {
       setError("root", { 
         message: error.message || "An unexpected error occurred. Please try again." 
       });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setIsLoading(true);
+    
+    try {
+      const result = await signInWithApple();
+      
+      // If result is null, redirect was initiated
+      if (!result) {
+        setIsLoading(false);
+        return;
+      }
+
+      const { user } = result;
+      if (user) {
+        const idToken = await user.getIdToken();
+        
+        const response = await fetch("/api/auth/session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ idToken }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to create session");
+        }
+
+        router.push(redirect);
+        
+        toast({
+          title: "Welcome!",
+          description: "You have been successfully signed in with Apple.",
+        });
+      }
+    } catch (error: any) {
+      console.error("Apple sign in error:", error);
+      
+      // Handle account exists with different credential
+      if (error?.code === 'auth/account-exists-with-different-credential') {
+        const email = error?.customData?.email || getUserEmail(error?.user);
+        if (email) {
+          const methods = await handleAccountExistsError(email);
+          const providerName = methods.includes('google.com') ? 'Google' : 
+                             methods.includes('password') ? 'email/password' : 'another provider';
+          
+          toast({
+            title: "Account already exists",
+            description: `An account with this email already exists. Please sign in with ${providerName} first, then you can link your Apple account in your profile settings.`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Account linking required",
+            description: "This Apple ID is associated with an existing account. Please contact support for assistance.",
+            variant: "destructive",
+          });
+        }
+      } else if (isPopupBlockedError(error)) {
+        toast({
+          title: "Popup blocked",
+          description: "Please allow popups for this site to sign in with Apple.",
+          variant: "destructive",
+        });
+      } else {
+        const errorMessage = getErrorMessages(error);
+        toast({
+          title: "Sign in failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -183,13 +265,15 @@ export function LoginForm() {
                 id="email"
                 type="email"
                 placeholder="Enter your email"
-                className="pl-10"
-                {...register("email")}
+                className="pl-10 h-12 text-base"
+                autoComplete="email"
+                aria-invalid={errors.email ? "true" : "false"}
                 aria-describedby={errors.email ? "email-error" : undefined}
+                {...register("email")}
               />
             </div>
             {errors.email && (
-              <p id="email-error" className="text-sm text-destructive">
+              <p id="email-error" className="text-sm text-destructive" role="alert" aria-live="polite">
                 {errors.email.message}
               </p>
             )}
@@ -203,9 +287,11 @@ export function LoginForm() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
-                className="pl-10 pr-10"
-                {...register("password")}
+                className="pl-10 pr-10 h-12 text-base"
+                autoComplete="current-password"
+                aria-invalid={errors.password ? "true" : "false"}
                 aria-describedby={errors.password ? "password-error" : undefined}
+                {...register("password")}
               />
               <Button
                 type="button"
@@ -223,7 +309,7 @@ export function LoginForm() {
               </Button>
             </div>
             {errors.password && (
-              <p id="password-error" className="text-sm text-destructive">
+              <p id="password-error" className="text-sm text-destructive" role="alert" aria-live="polite">
                 {errors.password.message}
               </p>
             )}
@@ -249,12 +335,16 @@ export function LoginForm() {
           </div>
 
           {errors.root && (
-            <p className="text-sm text-destructive text-center">
+            <div
+              role="alert"
+              aria-live="polite"
+              className="text-sm text-destructive text-center p-3 bg-destructive/10 rounded-md border border-destructive/20"
+            >
               {errors.root.message}
-            </p>
+            </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={isLoading || !watch("email") || !watch("password")}>
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
@@ -270,15 +360,27 @@ export function LoginForm() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-3">
+          <Button
+            variant="outline"
+            onClick={handleAppleSignIn}
+            disabled={isLoading}
+            className="w-full h-12 bg-black text-white hover:bg-gray-800 border-black text-base font-semibold"
+            aria-label="Sign in with Apple"
+          >
+            <Apple className="mr-3 h-5 w-5 fill-current" />
+            Continue with Apple
+          </Button>
+          
           <Button
             variant="outline"
             onClick={handleGoogleSignIn}
             disabled={isLoading}
-            className="w-full"
+            className="w-full h-12 text-base font-semibold"
+            aria-label="Sign in with Google"
           >
-            <Chrome className="mr-2 h-4 w-4" />
-            Google
+            <Chrome className="mr-3 h-5 w-5" />
+            Continue with Google
           </Button>
         </div>
 

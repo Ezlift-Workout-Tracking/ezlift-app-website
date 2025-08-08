@@ -24,6 +24,11 @@ In the Firebase console, go to Authentication > Sign-in method and enable:
 - **Google** (optional)
 - **Apple** (optional)
 
+**Apple Sign-In Notes:**
+- The Apple button uses a popup flow on desktop browsers and automatically falls back to redirect on Safari/iOS when popups are blocked
+- The redirect completion is handled automatically when users return from Apple's authentication page
+- Account linking is supported - if a user tries to sign in with Apple using an email already associated with another provider, they'll receive guidance to sign in with the existing provider first
+
 ### Get Firebase Config
 
 1. Go to Project Settings (gear icon)

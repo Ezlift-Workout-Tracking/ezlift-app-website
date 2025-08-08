@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -11,10 +11,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, Mail, Lock, Chrome, Check, X } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Chrome, Check, X, Apple } from "lucide-react";
 import Link from "next/link";
 import { signupSchema, type SignupFormData } from "@/lib/auth/schemas";
-import { signUpWithEmail, signInWithGoogle } from "@/lib/auth/firebaseClient";
+import { signUpWithEmail, signInWithGoogle, completeRedirectSignIn } from "@/lib/auth/firebaseClient";
+import { signInWithApple, completeAppleRedirect, handleAccountExistsError, getUserEmail } from "@/lib/auth/signInWithApple";
 import { getErrorMessages, isPopupBlockedError } from "@/lib/auth/errorMap";
 
 export function SignupForm() {
@@ -62,6 +63,33 @@ export function SignupForm() {
 
   const passwordsMatch = password && confirmPassword && password === confirmPassword;
 
+  // Complete redirect flow if we were redirected back
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        // Check for both Google and Apple redirects
+        let user = await completeRedirectSignIn();
+        if (!user) {
+          user = await completeAppleRedirect();
+        }
+        if (!active || !user) return;
+        const idToken = await user.getIdToken();
+        const response = await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken }),
+        });
+        if (!response.ok) throw new Error("Failed to create session");
+        router.push(redirect);
+        toast({ title: "Welcome to EZLift!", description: "Your account has been created successfully." });
+      } catch (_) {
+        // ignore if not a redirect result
+      }
+    })();
+    return () => { active = false; };
+  }, [redirect, router, toast]);
+
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
     
@@ -104,6 +132,83 @@ export function SignupForm() {
       setError("root", { 
         message: error.message || "An unexpected error occurred. Please try again." 
       });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setIsLoading(true);
+    
+    try {
+      const result = await signInWithApple();
+      
+      // If result is null, redirect was initiated
+      if (!result) {
+        setIsLoading(false);
+        return;
+      }
+
+      const { user } = result;
+      if (user) {
+        const idToken = await user.getIdToken();
+        
+        const response = await fetch("/api/auth/session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ idToken }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to create session");
+        }
+
+        router.push(redirect);
+        
+        toast({
+          title: "Welcome to EZLift!",
+          description: "Your account has been created successfully with Apple.",
+        });
+      }
+    } catch (error: any) {
+      console.error("Apple sign up error:", error);
+      
+      // Handle account exists with different credential
+      if (error?.code === 'auth/account-exists-with-different-credential') {
+        const email = error?.customData?.email || getUserEmail(error?.user);
+        if (email) {
+          const methods = await handleAccountExistsError(email);
+          const providerName = methods.includes('google.com') ? 'Google' : 
+                             methods.includes('password') ? 'email/password' : 'another provider';
+          
+          toast({
+            title: "Account already exists",
+            description: `An account with this email already exists. Please sign in with ${providerName} first, then you can link your Apple account in your profile settings.`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Account linking required",
+            description: "This Apple ID is associated with an existing account. Please contact support for assistance.",
+            variant: "destructive",
+          });
+        }
+      } else if (isPopupBlockedError(error)) {
+        toast({
+          title: "Popup blocked",
+          description: "Please allow popups for this site to sign up with Apple.",
+          variant: "destructive",
+        });
+      } else {
+        const errorMessage = getErrorMessages(error);
+        toast({
+          title: "Sign up failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -185,13 +290,15 @@ export function SignupForm() {
                 id="email"
                 type="email"
                 placeholder="Enter your email"
-                className="pl-10"
-                {...register("email")}
+                className="pl-10 h-12 text-base"
+                autoComplete="email"
+                aria-invalid={errors.email ? "true" : "false"}
                 aria-describedby={errors.email ? "email-error" : undefined}
+                {...register("email")}
               />
             </div>
             {errors.email && (
-              <p id="email-error" className="text-sm text-destructive">
+              <p id="email-error" className="text-sm text-destructive" role="alert" aria-live="polite">
                 {errors.email.message}
               </p>
             )}
@@ -205,11 +312,13 @@ export function SignupForm() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Create a password"
-                className="pl-10 pr-10"
+                className="pl-10 pr-10 h-12 text-base"
+                autoComplete="new-password"
+                aria-invalid={errors.password ? "true" : "false"}
+                aria-describedby={errors.password ? "password-error password-requirements" : "password-requirements"}
                 {...register("password")}
                 onFocus={() => setPasswordFocused(true)}
                 onBlur={() => setPasswordFocused(false)}
-                aria-describedby={errors.password ? "password-error" : undefined}
               />
               <Button
                 type="button"
@@ -229,14 +338,14 @@ export function SignupForm() {
             
             {/* Password requirements */}
             {passwordFocused && password && (
-              <div className="space-y-1 text-sm">
+              <div id="password-requirements" className="space-y-1 text-sm" aria-live="polite">
                 <p className="text-muted-foreground">Password requirements:</p>
                 {passwordRequirements.map((requirement, index) => (
                   <div key={index} className="flex items-center gap-2">
                     {requirement.met ? (
-                      <Check className="h-3 w-3 text-green-500" />
+                      <Check className="h-3 w-3 text-green-500" aria-hidden="true" />
                     ) : (
-                      <X className="h-3 w-3 text-red-500" />
+                      <X className="h-3 w-3 text-red-500" aria-hidden="true" />
                     )}
                     <span className={requirement.met ? "text-green-600" : "text-red-600"}>
                       {requirement.label}
@@ -261,9 +370,11 @@ export function SignupForm() {
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm your password"
-                className="pl-10 pr-10"
+                className="pl-10 pr-10 h-12 text-base"
+                autoComplete="new-password"
+                aria-invalid={errors.confirmPassword ? "true" : "false"}
+                aria-describedby={errors.confirmPassword ? "confirm-password-error password-match" : "password-match"}
                 {...register("confirmPassword")}
-                aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined}
               />
               <Button
                 type="button"
@@ -283,11 +394,11 @@ export function SignupForm() {
             
             {/* Password match indicator */}
             {confirmPassword && (
-              <div className="flex items-center gap-2 text-sm">
+              <div id="password-match" className="flex items-center gap-2 text-sm" aria-live="polite">
                 {passwordsMatch ? (
-                  <Check className="h-3 w-3 text-green-500" />
+                  <Check className="h-3 w-3 text-green-500" aria-hidden="true" />
                 ) : (
-                  <X className="h-3 w-3 text-red-500" />
+                  <X className="h-3 w-3 text-red-500" aria-hidden="true" />
                 )}
                 <span className={passwordsMatch ? "text-green-600" : "text-red-600"}>
                   Passwords {passwordsMatch ? "match" : "don't match"}
@@ -329,12 +440,20 @@ export function SignupForm() {
           </div>
 
           {errors.root && (
-            <p className="text-sm text-destructive text-center">
+            <div
+              role="alert"
+              aria-live="polite"
+              className="text-sm text-destructive text-center p-3 bg-destructive/10 rounded-md border border-destructive/20"
+            >
               {errors.root.message}
-            </p>
+            </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button 
+            type="submit" 
+            className="w-full h-12 text-base font-semibold" 
+            disabled={isLoading || !watch("email") || !watch("password") || !watch("confirmPassword") || !watch("terms") || !passwordsMatch}
+          >
             {isLoading ? "Creating account..." : "Create account"}
           </Button>
         </form>
@@ -350,15 +469,27 @@ export function SignupForm() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-3">
+          <Button
+            variant="outline"
+            onClick={handleAppleSignIn}
+            disabled={isLoading}
+            className="w-full h-12 bg-black text-white hover:bg-gray-800 border-black text-base font-semibold"
+            aria-label="Sign up with Apple"
+          >
+            <Apple className="mr-3 h-5 w-5 fill-current" />
+            Continue with Apple
+          </Button>
+          
           <Button
             variant="outline"
             onClick={handleGoogleSignIn}
             disabled={isLoading}
-            className="w-full"
+            className="w-full h-12 text-base font-semibold"
+            aria-label="Sign up with Google"
           >
-            <Chrome className="mr-2 h-4 w-4" />
-            Google
+            <Chrome className="mr-3 h-5 w-5" />
+            Continue with Google
           </Button>
         </div>
 
