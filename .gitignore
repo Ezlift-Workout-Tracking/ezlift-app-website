@@ -49,3 +49,9 @@ temp-*.ts
 # Documentation files
 ENVIRONMENT_SETUP.md
 app/sitemap.xml
+
+# Local env backups
+.env.local.*
+.env.*.bak*
+*.bak.*
+
