@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Search, Filter, X } from 'lucide-react';
-import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -19,12 +18,15 @@ import {
   CollapsibleTrigger,
 } from '../ui/collapsible';
 import { ExerciseFilters as Filters, FilterOptions } from '../../types/exercise';
+import DebouncedSearchInput from './DebouncedSearchInput';
 
 interface ExerciseFiltersProps {
   filters: Filters;
   filterOptions: FilterOptions;
   onFiltersChange: (filters: Filters) => void;
   onClearFilters: () => void;
+  onSearchResults?: (results: any) => void;
+  onSearchStatusChange?: (status: 'idle' | 'loading' | 'success' | 'error', error?: string | null) => void;
   isLoading?: boolean;
 }
 
@@ -33,6 +35,8 @@ const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
   filterOptions,
   onFiltersChange,
   onClearFilters,
+  onSearchResults,
+  onSearchStatusChange,
   isLoading = false,
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -50,10 +54,10 @@ const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
     };
   }, [filterOptions]);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = (searchValue: string) => {
     onFiltersChange({
       ...filters,
-      search: e.target.value,
+      search: searchValue,
     });
   };
 
@@ -150,17 +154,14 @@ const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Search exercises..."
-            value={filters.search || ''}
-            onChange={handleSearchChange}
-            className="pl-10 bg-white border-gray-300 focus:border-gray-400 focus:ring-gray-400 text-gray-900 placeholder:text-gray-500"
-            disabled={isLoading}
-          />
-        </div>
+        <DebouncedSearchInput
+          initialValue={filters.search || ''}
+          filters={filters}
+          onSearchResults={onSearchResults || (() => {})}
+          onSearchStatusChange={onSearchStatusChange || (() => {})}
+          placeholder="Search exercises..."
+          disabled={isLoading}
+        />
 
         {/* Active Filters */}
         {hasActiveFilters() && (

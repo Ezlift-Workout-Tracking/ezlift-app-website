@@ -7,12 +7,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Dumbbell } from "lucide-react";
 
 import exerciseDataService from '../../lib/services/exercise-data';
-import ExerciseFiltersClient from '../../components/exercise/ExerciseFiltersClient';
-import ExerciseCard from '../../components/exercise/ExerciseCard';
+import ExerciseLibraryClient from '../../components/exercise/ExerciseLibraryClient';
 import { Button } from '../../components/ui/button';
-import { Alert, AlertDescription } from '../../components/ui/alert';
 import { ExerciseFilters as Filters, FilterOptions } from '../../types/exercise';
-import PaginationClient from '@/components/exercise/PaginationClient';
 import { EXERCISE_LIBRARY_PAGE_SIZE } from '../../lib/constants/pagination';
 
 // Static metadata is now replaced by dynamic generateMetadata function below
@@ -344,62 +341,13 @@ const ExerciseLibraryPage: React.FC<ExerciseLibraryPageProps> = async ({
                 </div>
               </FadeIn>
 
-              {/* Filters */}
-              <div className="mb-12">
-                <ExerciseFiltersClient 
-                  initialFilters={filters}
-                  filterOptions={filterOptions}
-                />
-              </div>
-
-              {/* Results Summary */}
-              <div className="mb-8">
-                <p className="text-sm text-gray-600 text-center">
-                  Showing {exercises.length} of {total} exercises
-                  {page > 1 && ` (Page ${page} of ${totalPages})`}
-                </p>
-              </div>
-
-              {/* Exercise Grid */}
-              {exercises.length > 0 ? (
-                <div className="container max-w-7xl mx-auto mb-12">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
-                    {exercises.map((exercise, index) => (
-                      <FadeIn key={exercise.id} delay={Math.min(index * 25, 200)}>
-                        <ExerciseCard exercise={exercise} />
-                      </FadeIn>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="max-w-4xl mx-auto mb-12">
-                  <EmptyState
-                    icon={<Dumbbell className="w-12 h-12 text-gray-400" />}
-                    title="No Exercises Found"
-                    description="Try adjusting your filters or search terms to find exercises that match your criteria."
-                    action={
-                      <Button 
-                        variant="outline" 
-                        asChild
-                        className="mt-4"
-                      >
-                        <a href="/exercise-library">Clear all filters</a>
-                      </Button>
-                    }
-                  />
-                </div>
-              )}
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex justify-center">
-                  <PaginationClient
-                    currentPage={page}
-                    totalPages={totalPages}
-                    filters={filters}
-                  />
-                </div>
-              )}
+              {/* Exercise Library Client Component */}
+              <ExerciseLibraryClient
+                initialData={{ exercises, total, page, limit }}
+                initialFilters={filters}
+                filterOptions={filterOptions}
+                currentPage={page}
+              />
             </div>
           </main>
         </div>
