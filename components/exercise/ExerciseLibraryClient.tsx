@@ -96,15 +96,12 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
 
   // Handle search results from debounced search
   const handleSearchResults = useCallback((results: ExerciseListResponse) => {
+    // Non-blocking updates - results and URL are already handled by the hook
     setExercises(results.exercises);
     setTotal(results.total);
     setPage(1); // Reset to page 1 for search results
     setIsUsingClientSearch(true);
-    
-    // Update URL for search - make sure to use current filters state
-    const currentFilters = { ...filters };
-    updateURL(currentFilters, 1);
-  }, [filters, updateURL]);
+  }, []);
 
   // Handle search status changes
   const handleSearchStatusChange = useCallback((

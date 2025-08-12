@@ -1,15 +1,16 @@
-# Debounced Search Implementation
+# Debounced Search Implementation (v2.0)
 
 ## Overview
 
-This implementation adds debounced search functionality to the Exercise Library, preventing excessive database queries while maintaining a responsive user experience.
+This implementation provides a smooth, non-blocking debounced search experience for the Exercise Library. It uses proper trailing debounce, React 18 transitions, and never blocks user input during search execution.
 
 ## Key Features
 
-### 1. Debounced Timing
-- **Desktop**: 350ms delay
-- **Mobile** (iPhone/Android): 500ms delay
-- **Enter key**: Immediate search (bypasses debounce)
+### 1. Proper Trailing Debounce
+- **Desktop**: 350ms delay after last keystroke (not from first)
+- **Mobile** (iPhone/Android): 500ms delay after last keystroke
+- **Enter key**: Immediate search (cancels debounce timer)
+- **Timing**: Uses lodash.debounce with `{ leading: false, trailing: true }`
 
 ### 2. Minimum Length Validation
 - No queries until input has ≥ 2 characters
@@ -111,17 +112,18 @@ GET /api/exercises?search=<query>&page=1&limit=15&<filters>
 
 ## Performance Benefits
 
-### Before
+### Before (v1.0)
 - Query fired on every keystroke
-- Database hammered with rapid requests
-- Potential for race conditions
-- No caching, repeated identical queries
+- Input could freeze during search execution
+- URL updated on every keystroke
+- Leading/throttle behavior (fired too early)
 
-### After
-- Single query after user pauses typing
-- Intelligent caching reduces duplicate requests
-- Race condition protection via AbortController
-- Responsive feel with instant cached results
+### After (v2.0)
+- **Trailing debounce**: Single query after user stops typing
+- **Never blocks typing**: Input stays responsive during searches
+- **Non-blocking updates**: Uses React 18 useTransition for smooth rendering
+- **Smart URL sync**: Only updates URL when search actually executes
+- **Intelligent caching**: LRU cache with background revalidation
 
 ## Testing
 
