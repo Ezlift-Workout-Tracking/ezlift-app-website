@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import debounce from 'lodash.debounce';
 import { ExerciseFilters, ExerciseListResponse } from '@/types/exercise';
 
 interface SearchResult {
@@ -20,13 +22,15 @@ interface UseDebouncedSearchOptions {
 
 interface UseDebouncedSearchReturn {
   term: string;
-  setTerm: (term: string) => void;
+  onTermChange: (term: string) => void;
+  onEnter: () => void;
   results: ExerciseListResponse | null;
   status: SearchStatus;
   error: string | null;
-  runSearch: (query: string, filters: ExerciseFilters, force?: boolean) => Promise<void>;
+  isPending: boolean;
   clearCache: () => void;
   isComposing: boolean;
+  setIsComposing: (composing: boolean) => void;
 }
 
 // Mobile detection utility
@@ -36,7 +40,7 @@ const isMobile = (): boolean => {
 };
 
 // Build URL for API request
-const buildUrl = (query: string, filters: ExerciseFilters, options: { page: number; limit: number }): string => {
+const buildApiUrl = (query: string, filters: ExerciseFilters, options: { page: number; limit: number }): string => {
   const params = new URLSearchParams();
   
   if (query.trim()) {
@@ -63,6 +67,37 @@ const buildUrl = (query: string, filters: ExerciseFilters, options: { page: numb
   params.set('limit', options.limit.toString());
   
   return `/api/exercises?${params.toString()}`;
+};
+
+// Build URL for page navigation
+const buildPageUrl = (query: string, filters: ExerciseFilters, options: { page: number }): string => {
+  const params = new URLSearchParams();
+  
+  if (query.trim()) {
+    params.set('search', query.trim());
+  }
+  
+  if (filters.exerciseType) {
+    params.set('type', filters.exerciseType);
+  }
+  
+  if (filters.primaryMuscleGroup) {
+    params.set('muscle', filters.primaryMuscleGroup);
+  }
+  
+  if (filters.force) {
+    params.set('movement', filters.force);
+  }
+  
+  if (filters.level) {
+    params.set('difficulty', filters.level);
+  }
+  
+  if (options.page > 1) {
+    params.set('page', options.page.toString());
+  }
+  
+  return `/exercise-library${params.toString() ? '?' + params.toString() : ''}`;
 };
 
 // LRU Cache implementation
@@ -102,7 +137,10 @@ class LRUCache<K, V> {
   }
 }
 
-export function useDebouncedSearch(options: UseDebouncedSearchOptions = {}): UseDebouncedSearchReturn {
+export function useDebouncedSearch(
+  filters: ExerciseFilters,
+  options: UseDebouncedSearchOptions = {}
+): UseDebouncedSearchReturn {
   const {
     delayDesktop = 350,
     delayMobile = 500,
@@ -116,43 +154,67 @@ export function useDebouncedSearch(options: UseDebouncedSearchOptions = {}): Use
   const [status, setStatus] = useState<SearchStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const [isComposing, setIsComposing] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
+  const router = useRouter();
   const controllerRef = useRef<AbortController | null>(null);
   const cacheRef = useRef(new LRUCache<string, SearchResult>(cacheSize));
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const clearTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const delay = isMobile() ? delayMobile : delayDesktop;
 
-  const runSearch = useCallback(async (query: string, filters: ExerciseFilters, force = false) => {
+  const runSearch = useCallback(async (query: string, searchFilters: ExerciseFilters) => {
     const trimmedQuery = query.trim();
     
-    // Handle empty query - always search to show all results
+    // Handle empty query with debounce to avoid thrashing
     if (trimmedQuery.length === 0) {
-      // Continue with search to fetch all results
-    } else if (!force && trimmedQuery.length < minLength) {
-      // Don't search if below minimum length and not forced (and not empty)
+      if (clearTimeoutRef.current) {
+        clearTimeout(clearTimeoutRef.current);
+      }
+      
+      clearTimeoutRef.current = setTimeout(() => {
+        // Show default list after 200ms to avoid thrashing during rapid backspaces
+        runSearchInternal('', searchFilters);
+      }, 200);
+      return;
+    }
+    
+    // Clear the clear timeout if we have a real query
+    if (clearTimeoutRef.current) {
+      clearTimeout(clearTimeoutRef.current);
+      clearTimeoutRef.current = null;
+    }
+    
+    // Don't search if below minimum length
+    if (trimmedQuery.length < minLength) {
+      startTransition(() => {
+        setResults(null);
+      });
       setStatus('idle');
       setError(null);
       return;
     }
 
+    await runSearchInternal(trimmedQuery, searchFilters);
+  }, [minLength]);
+
+  const runSearchInternal = useCallback(async (query: string, searchFilters: ExerciseFilters) => {
     // Create cache key
-    const cacheKey = JSON.stringify({ query: trimmedQuery, filters });
+    const cacheKey = JSON.stringify({ query, filters: searchFilters });
     
     // Check cache first
     const cached = cacheRef.current.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < cacheTTL) {
-      // Use cached data immediately
-      setResults(cached.data);
+      // Use cached data immediately with non-blocking update
+      startTransition(() => {
+        setResults(cached.data);
+        // Update URL non-blocking
+        const pageUrl = buildPageUrl(query, searchFilters, { page: 1 });
+        router.replace(pageUrl, { scroll: false });
+      });
       setStatus('success');
       setError(null);
-      
-      // Still revalidate in background if not forced (Enter key press)
-      if (!force) {
-        // Continue to make background request for revalidation
-      } else {
-        return;
-      }
+      return;
     }
 
     // Cancel previous request
@@ -165,8 +227,8 @@ export function useDebouncedSearch(options: UseDebouncedSearchOptions = {}): Use
     setError(null);
 
     try {
-      const url = buildUrl(trimmedQuery, filters, { page: 1, limit: 15 });
-      const response = await fetch(url, {
+      const apiUrl = buildApiUrl(query, searchFilters, { page: 1, limit: 15 });
+      const response = await fetch(apiUrl, {
         signal: controllerRef.current.signal,
         cache: 'no-store',
         headers: {
@@ -186,7 +248,14 @@ export function useDebouncedSearch(options: UseDebouncedSearchOptions = {}): Use
         timestamp: Date.now(),
       });
 
-      setResults(data);
+      // Non-blocking result and URL updates
+      startTransition(() => {
+        setResults(data);
+        // Update URL non-blocking, don't await
+        const pageUrl = buildPageUrl(query, searchFilters, { page: 1 });
+        router.replace(pageUrl, { scroll: false });
+      });
+      
       setStatus('success');
       setError(null);
     } catch (err: any) {
@@ -201,26 +270,44 @@ export function useDebouncedSearch(options: UseDebouncedSearchOptions = {}): Use
       
       // Don't clear results on error, keep showing previous results
     }
-  }, [minLength, cacheTTL]);
+  }, [cacheTTL, router]);
+
+  // Trailing debounce - only fires after user stops typing
+  const debouncedSearch = useMemo(
+    () => debounce((query: string, searchFilters: ExerciseFilters) => {
+      runSearch(query, searchFilters);
+    }, delay, { 
+      leading: false,  // Don't fire on the first call
+      trailing: true   // Fire after the delay
+    }),
+    [delay, runSearch]
+  );
+
+  // Handle term changes (from input onChange)
+  const onTermChange = useCallback((value: string) => {
+    // Immediately update term state (never blocks typing)
+    setTerm(value);
+    
+    // Don't debounce during IME composition
+    if (isComposing) {
+      return;
+    }
+    
+    // Start/restart debounce timer
+    debouncedSearch(value, filters);
+  }, [isComposing, debouncedSearch, filters]);
+
+  // Handle Enter key (immediate search, bypass debounce)
+  const onEnter = useCallback(() => {
+    // Cancel any pending debounced search
+    debouncedSearch.cancel();
+    
+    // Run search immediately
+    runSearch(term, filters);
+  }, [debouncedSearch, term, filters, runSearch]);
 
   const clearCache = useCallback(() => {
     cacheRef.current.clear();
-  }, []);
-
-  // Handle IME composition events
-  useEffect(() => {
-    const handleCompositionStart = () => setIsComposing(true);
-    const handleCompositionEnd = () => setIsComposing(false);
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('compositionstart', handleCompositionStart);
-      window.addEventListener('compositionend', handleCompositionEnd);
-
-      return () => {
-        window.removeEventListener('compositionstart', handleCompositionStart);
-        window.removeEventListener('compositionend', handleCompositionEnd);
-      };
-    }
   }, []);
 
   // Cleanup on unmount
@@ -229,20 +316,23 @@ export function useDebouncedSearch(options: UseDebouncedSearchOptions = {}): Use
       if (controllerRef.current) {
         controllerRef.current.abort();
       }
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+      if (clearTimeoutRef.current) {
+        clearTimeout(clearTimeoutRef.current);
       }
+      debouncedSearch.cancel();
     };
-  }, []);
+  }, [debouncedSearch]);
 
   return {
     term,
-    setTerm,
+    onTermChange,
+    onEnter,
     results,
     status,
     error,
-    runSearch,
+    isPending,
     clearCache,
     isComposing,
+    setIsComposing,
   };
 }

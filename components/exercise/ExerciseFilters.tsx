@@ -160,7 +160,7 @@ const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
           onSearchResults={onSearchResults || (() => {})}
           onSearchStatusChange={onSearchStatusChange || (() => {})}
           placeholder="Search exercises..."
-          disabled={isLoading}
+          disabled={false} // Never disable - input must stay responsive during search
         />
 
         {/* Active Filters */}
