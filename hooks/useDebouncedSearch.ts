@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect, useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import debounce from 'lodash.debounce';
+import debounce from 'lodash/debounce';
 import { ExerciseFilters, ExerciseListResponse } from '@/types/exercise';
 
 interface SearchResult {
@@ -126,8 +126,10 @@ class LRUCache<K, V> {
       this.cache.delete(key);
     } else if (this.cache.size >= this.maxSize) {
       // Remove oldest (first entry)
-      const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      const firstKey = this.cache.keys().next().value as K | undefined;
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
     }
     this.cache.set(key, value);
   }
@@ -274,12 +276,18 @@ export function useDebouncedSearch(
 
   // Trailing debounce - only fires after user stops typing
   const debouncedSearch = useMemo(
-    () => debounce((query: string, searchFilters: ExerciseFilters) => {
-      runSearch(query, searchFilters);
-    }, delay, { 
-      leading: false,  // Don't fire on the first call
-      trailing: true   // Fire after the delay
-    }),
+    () => debounce(
+      (query: string, searchFilters: ExerciseFilters) => {
+        runSearch(query, searchFilters);
+      },
+      delay,
+      {
+        leading: false,
+        trailing: true,
+        // Ensure a trailing call happens if user types continuously
+        maxWait: Math.max(800, delay * 3),
+      }
+    ),
     [delay, runSearch]
   );
 

@@ -1,6 +1,8 @@
+// @ts-nocheck
 /**
  * @jest-environment jsdom
  */
+/// <reference types="jest" />
 
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useDebouncedSearch } from '../hooks/useDebouncedSearch';
@@ -15,8 +17,8 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
-// Mock lodash.debounce
-jest.mock('lodash.debounce', () => {
+// Mock lodash/debounce
+jest.mock('lodash/debounce', () => {
   return jest.fn((fn, delay, options) => {
     const debouncedFn = (...args: any[]) => {
       // For testing, we'll simulate the debounce behavior
