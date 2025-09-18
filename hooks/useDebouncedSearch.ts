@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect, useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import debounce from 'lodash.debounce';
+import { debounce } from 'lodash';
 import { ExerciseFilters, ExerciseListResponse } from '@/types/exercise';
 
 interface SearchResult {
@@ -142,11 +142,11 @@ export function useDebouncedSearch(
   options: UseDebouncedSearchOptions = {}
 ): UseDebouncedSearchReturn {
   const {
-    delayDesktop = 350,
-    delayMobile = 500,
-    minLength = 2,
-    cacheSize = 10,
-    cacheTTL = 5 * 60 * 1000, // 5 minutes
+    delayDesktop = 250, // Reduced delay for better responsiveness
+    delayMobile = 350,  // Reduced delay for mobile too
+    minLength = 1,      // Search with 1 character for better UX
+    cacheSize = 20,     // Increased cache size
+    cacheTTL = 10 * 60 * 1000, // Increased cache time to 10 minutes
   } = options;
 
   const [term, setTerm] = useState('');
@@ -166,16 +166,15 @@ export function useDebouncedSearch(
   const runSearch = useCallback(async (query: string, searchFilters: ExerciseFilters) => {
     const trimmedQuery = query.trim();
     
-    // Handle empty query with debounce to avoid thrashing
+    // Handle empty query with immediate response to avoid delay
     if (trimmedQuery.length === 0) {
       if (clearTimeoutRef.current) {
         clearTimeout(clearTimeoutRef.current);
+        clearTimeoutRef.current = null;
       }
       
-      clearTimeoutRef.current = setTimeout(() => {
-        // Show default list after 200ms to avoid thrashing during rapid backspaces
-        runSearchInternal('', searchFilters);
-      }, 200);
+      // Immediately show default list for empty query
+      await runSearchInternal('', searchFilters);
       return;
     }
     
@@ -185,13 +184,11 @@ export function useDebouncedSearch(
       clearTimeoutRef.current = null;
     }
     
-    // Don't search if below minimum length
+    // Don't search if below minimum length, but don't clear results immediately
     if (trimmedQuery.length < minLength) {
-      startTransition(() => {
-        setResults(null);
-      });
       setStatus('idle');
       setError(null);
+      // Keep previous results visible instead of clearing them
       return;
     }
 
@@ -199,8 +196,8 @@ export function useDebouncedSearch(
   }, [minLength]);
 
   const runSearchInternal = useCallback(async (query: string, searchFilters: ExerciseFilters) => {
-    // Create cache key
-    const cacheKey = JSON.stringify({ query, filters: searchFilters });
+    // Create more efficient cache key
+    const cacheKey = `${query}|${searchFilters.exerciseType || ''}|${searchFilters.primaryMuscleGroup || ''}|${searchFilters.force || ''}|${searchFilters.level || ''}`;
     
     // Check cache first
     const cached = cacheRef.current.get(cacheKey);
@@ -237,10 +234,18 @@ export function useDebouncedSearch(
       });
 
       if (!response.ok) {
-        throw new Error(`Search failed: ${response.status}`);
+        const errorMessage = response.status === 404 ? 'No exercises found' : 
+                           response.status >= 500 ? 'Server error. Please try again.' :
+                           `Search failed (${response.status})`;
+        throw new Error(errorMessage);
       }
 
       const data: ExerciseListResponse = await response.json();
+      
+      // Validate response data
+      if (!data || !Array.isArray(data.exercises)) {
+        throw new Error('Invalid response format');
+      }
       
       // Cache the result
       cacheRef.current.set(cacheKey, {
@@ -266,7 +271,7 @@ export function useDebouncedSearch(
       
       console.error('Search error:', err);
       setStatus('error');
-      setError('Search failed. Please try again.');
+      setError(err.message || 'Search failed. Please try again.');
       
       // Don't clear results on error, keep showing previous results
     }

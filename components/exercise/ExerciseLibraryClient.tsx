@@ -94,24 +94,6 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
     router.push(newURL, { scroll: false });
   }, [searchParams, router]);
 
-  // Handle search results from debounced search
-  const handleSearchResults = useCallback((results: ExerciseListResponse) => {
-    // Non-blocking updates - results and URL are already handled by the hook
-    setExercises(results.exercises);
-    setTotal(results.total);
-    setPage(1); // Reset to page 1 for search results
-    setIsUsingClientSearch(true);
-  }, []);
-
-  // Handle search status changes
-  const handleSearchStatusChange = useCallback((
-    status: 'idle' | 'loading' | 'success' | 'error', 
-    error?: string | null
-  ) => {
-    setIsSearching(status === 'loading');
-    setSearchError(error || null);
-  }, []);
-
   // Fetch filtered data from API
   const fetchFilteredData = useCallback(async (newFilters: Filters, pageNum: number = 1) => {
     try {
@@ -165,6 +147,59 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
       setIsSearching(false);
     }
   }, [updateURL]);
+
+  // Listen to URL changes and fetch data accordingly
+  useEffect(() => {
+    const currentPageFromURL = parseInt(searchParams.get('page') || '1');
+    const searchFromURL = searchParams.get('search') || '';
+    const typeFromURL = searchParams.get('type') || '';
+    const muscleFromURL = searchParams.get('muscle') || '';
+    const movementFromURL = searchParams.get('movement') || '';
+    const difficultyFromURL = searchParams.get('difficulty') || '';
+
+    const urlFilters: Filters = {
+      search: searchFromURL || undefined,
+      exerciseType: typeFromURL || undefined,
+      primaryMuscleGroup: muscleFromURL || undefined,
+      force: movementFromURL as any || undefined,
+      level: difficultyFromURL as any || undefined,
+    };
+
+    // Check if URL params differ from current state
+    const paramsChanged = 
+      currentPageFromURL !== page ||
+      urlFilters.search !== filters.search ||
+      urlFilters.exerciseType !== filters.exerciseType ||
+      urlFilters.primaryMuscleGroup !== filters.primaryMuscleGroup ||
+      urlFilters.force !== filters.force ||
+      urlFilters.level !== filters.level;
+
+    if (paramsChanged && !isUsingClientSearch) {
+      // Update filters state to match URL
+      setFilters(urlFilters);
+      
+      // Fetch new data for the URL parameters
+      fetchFilteredData(urlFilters, currentPageFromURL);
+    }
+  }, [searchParams, page, filters, isUsingClientSearch, fetchFilteredData]);
+
+  // Handle search results from debounced search
+  const handleSearchResults = useCallback((results: ExerciseListResponse) => {
+    // Non-blocking updates - results and URL are already handled by the hook
+    setExercises(results.exercises);
+    setTotal(results.total);
+    setPage(1); // Reset to page 1 for search results
+    setIsUsingClientSearch(true);
+  }, []);
+
+  // Handle search status changes
+  const handleSearchStatusChange = useCallback((
+    status: 'idle' | 'loading' | 'success' | 'error', 
+    error?: string | null
+  ) => {
+    setIsSearching(status === 'loading');
+    setSearchError(error || null);
+  }, []);
 
   // Handle filter changes
   const handleFiltersChange = useCallback((newFilters: Filters) => {

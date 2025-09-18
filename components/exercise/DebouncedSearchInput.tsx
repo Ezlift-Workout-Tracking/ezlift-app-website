@@ -39,9 +39,9 @@ const DebouncedSearchInput: React.FC<DebouncedSearchInputProps> = ({
     isComposing,
     setIsComposing,
   } = useDebouncedSearch(filters, {
-    delayDesktop: 350,
-    delayMobile: 500,
-    minLength: 2,
+    delayDesktop: 250,  // Faster response
+    delayMobile: 350,   // Faster response on mobile
+    minLength: 1,       // Search with just 1 character for better UX
   });
 
   // Handle input change - never blocks typing
@@ -112,12 +112,16 @@ const DebouncedSearchInput: React.FC<DebouncedSearchInputProps> = ({
       return null;
     }
     
-    if (trimmedValue.length < 2) {
-      return 'Keep typing to search...';
+    if (status === 'loading') {
+      return 'Searching...';
+    }
+    
+    if (status === 'error' && error) {
+      return error;
     }
     
     return null;
-  }, [inputValue]);
+  }, [inputValue, status, error]);
 
   const helperText = getHelperText();
   const showSpinner = status === 'loading' && !isPending; // Only show spinner for urgent loading
