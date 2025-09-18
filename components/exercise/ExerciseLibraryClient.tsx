@@ -37,6 +37,15 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Sync local state with server-provided props when URL/search params change via navigation
+  useEffect(() => {
+    setExercises(initialData.exercises);
+    setTotal(initialData.total);
+    setPage(currentPage);
+    setFilters(initialFilters);
+    setIsUsingClientSearch(false);
+  }, [initialData, initialFilters, currentPage]);
+
   // Check if filters have changed
   const filtersChanged = useCallback((oldFilters: Filters, newFilters: Filters) => {
     return (
