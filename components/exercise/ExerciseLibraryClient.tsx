@@ -44,7 +44,7 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
   // Search uses server-side operations (SSR + API)
   // This works perfectly in serverless environments without timeout issues
 
-  // Update URL when filters or page change
+  // Update URL when filters or page change and trigger server-side refetch
   const updateURL = useCallback((newFilters: Filters, newPage: number) => {
     const params = new URLSearchParams(searchParams);
     
@@ -87,7 +87,10 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
     }
     
     const newURL = `/exercise-library?${params.toString()}`;
-    router.push(newURL, { scroll: false });
+    
+    // Push new URL and refresh to trigger server-side data fetch
+    router.push(newURL);
+    router.refresh(); // Critical: triggers server component to re-fetch with new params
   }, [searchParams, router]);
 
   // Handle filter changes - triggers server-side refetch via URL update
