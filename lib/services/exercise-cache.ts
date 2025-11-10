@@ -60,6 +60,25 @@ class ExerciseCacheService {
         }
 
         console.log(`[ExerciseCache] Loaded ${data.exercises.length} exercises`);
+        
+        // Log Contentful data stats for debugging
+        const withContent = data.exercises.filter(ex => ex.content).length;
+        const withSlugs = data.exercises.filter(ex => ex.content?.slug).length;
+        const withTitles = data.exercises.filter(ex => ex.content?.title).length;
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[ExerciseCache] Contentful data: ${withContent} exercises with content (${withSlugs} slugs, ${withTitles} titles)`);
+          
+          // Log a sample exercise with content for verification
+          const sampleWithContent = data.exercises.find(ex => ex.content?.slug);
+          if (sampleWithContent) {
+            console.log('[ExerciseCache] Sample exercise with Contentful data:', {
+              id: sampleWithContent.id,
+              name: sampleWithContent.name,
+              contentTitle: sampleWithContent.content?.title,
+              contentSlug: sampleWithContent.content?.slug,
+            });
+          }
+        }
 
         // Store in Zustand cache
         store.setExercises(data.exercises, filterOptions);
