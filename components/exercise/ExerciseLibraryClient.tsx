@@ -10,7 +10,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import ExerciseFilters from './ExerciseFilters';
 import ExerciseCard from './ExerciseCard';
 import PaginationClient from './PaginationClient';
-import { ExerciseFilters as Filters, FilterOptions, ExerciseListResponse } from '@/types/exercise';
+import { ExerciseFilters as Filters, FilterOptions, ExerciseListResponse, Exercise } from '@/types/exercise';
+import { exerciseCache } from '@/lib/services/exercise-cache';
+import { useExerciseStore } from '@/lib/stores/exerciseStore';
 
 interface ExerciseLibraryClientProps {
   initialData: ExerciseListResponse;
@@ -22,33 +24,73 @@ interface ExerciseLibraryClientProps {
 const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
   initialData,
   initialFilters,
-  filterOptions,
+  filterOptions: initialFilterOptions,
   currentPage,
 }) => {
-  const [exercises, setExercises] = useState(initialData.exercises);
+  const [exercises, setExercises] = useState<Exercise[]>(initialData.exercises);
   const [total, setTotal] = useState(initialData.total);
   const [filters, setFilters] = useState<Filters>(initialFilters);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>(initialFilterOptions);
   const [page, setPage] = useState(currentPage);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [isUsingClientSearch, setIsUsingClientSearch] = useState(false);
-  const [previousFilters, setPreviousFilters] = useState<Filters>(initialFilters);
+  const [cacheLoaded, setCacheLoaded] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
+  
+  // Subscribe to exercise store
+  const storeIsLoaded = useExerciseStore(state => state.isLoaded);
+  const storeIsLoading = useExerciseStore(state => state.isLoading);
+  const storeError = useExerciseStore(state => state.error);
 
-  // Check if filters have changed
-  const filtersChanged = useCallback((oldFilters: Filters, newFilters: Filters) => {
-    return (
-      oldFilters.search !== newFilters.search ||
-      oldFilters.exerciseType !== newFilters.exerciseType ||
-      oldFilters.primaryMuscleGroup !== newFilters.primaryMuscleGroup ||
-      oldFilters.force !== newFilters.force ||
-      oldFilters.level !== newFilters.level
+  // Initialize cache on mount
+  useEffect(() => {
+    const initCache = async () => {
+      try {
+        setIsSearching(true);
+        await exerciseCache.loadAllExercises();
+        
+        // Update filter options from cache if available
+        const cachedFilterOptions = exerciseCache.getFilterOptions();
+        if (cachedFilterOptions) {
+          setFilterOptions(cachedFilterOptions);
+        }
+        
+        setCacheLoaded(true);
+        
+        // Apply current filters with cached data
+        performClientSearch(filters, page);
+      } catch (error) {
+        console.error('Failed to initialize cache:', error);
+        setSearchError('Failed to load exercise library. Please refresh the page.');
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    initCache();
+  }, []); // Run once on mount
+
+  // Perform client-side search using cache
+  const performClientSearch = useCallback((searchFilters: Filters, pageNum: number) => {
+    if (!exerciseCache.isReady()) {
+      return;
+    }
+
+    const result = exerciseCache.searchExercises(
+      searchFilters.search || '',
+      searchFilters,
+      pageNum,
+      15 // items per page
     );
+
+    setExercises(result.exercises);
+    setTotal(result.total);
+    setPage(pageNum);
   }, []);
 
-  // Update URL when filters change (but only for non-search changes)
+  // Update URL when filters or page change
   const updateURL = useCallback((newFilters: Filters, newPage: number) => {
     const params = new URLSearchParams(searchParams);
     
@@ -94,142 +136,62 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
     router.push(newURL, { scroll: false });
   }, [searchParams, router]);
 
-  // Fetch filtered data from API
-  const fetchFilteredData = useCallback(async (newFilters: Filters, pageNum: number = 1) => {
-    try {
-      setIsSearching(true);
-      setSearchError(null);
-
-      const params = new URLSearchParams();
-      
-      if (newFilters.search) {
-        params.set('search', newFilters.search);
-      }
-      
-      if (newFilters.exerciseType) {
-        params.set('type', newFilters.exerciseType);
-      }
-      
-      if (newFilters.primaryMuscleGroup) {
-        params.set('muscle', newFilters.primaryMuscleGroup);
-      }
-      
-      if (newFilters.force) {
-        params.set('movement', newFilters.force);
-      }
-      
-      if (newFilters.level) {
-        params.set('difficulty', newFilters.level);
-      }
-      
-      params.set('page', pageNum.toString());
-      params.set('limit', '15');
-
-      const response = await fetch(`/api/exercises?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch exercises');
-      }
-
-      const data = await response.json();
-      
-      setExercises(data.exercises);
-      setTotal(data.total);
-      setPage(pageNum);
-      setIsUsingClientSearch(true);
-      setIsSearching(false);
-
-      // Update URL without page reload
-      updateURL(newFilters, pageNum);
-      
-    } catch (error) {
-      console.error('Error fetching filtered exercises:', error);
-      setSearchError('Failed to load exercises. Please try again.');
-      setIsSearching(false);
-    }
-  }, [updateURL]);
-
-  // Listen to URL changes and fetch data accordingly
-  useEffect(() => {
-    const currentPageFromURL = parseInt(searchParams.get('page') || '1');
-    const searchFromURL = searchParams.get('search') || '';
-    const typeFromURL = searchParams.get('type') || '';
-    const muscleFromURL = searchParams.get('muscle') || '';
-    const movementFromURL = searchParams.get('movement') || '';
-    const difficultyFromURL = searchParams.get('difficulty') || '';
-
-    const urlFilters: Filters = {
-      search: searchFromURL || undefined,
-      exerciseType: typeFromURL || undefined,
-      primaryMuscleGroup: muscleFromURL || undefined,
-      force: movementFromURL as any || undefined,
-      level: difficultyFromURL as any || undefined,
-    };
-
-    // Check if URL params differ from current state
-    const paramsChanged = 
-      currentPageFromURL !== page ||
-      urlFilters.search !== filters.search ||
-      urlFilters.exerciseType !== filters.exerciseType ||
-      urlFilters.primaryMuscleGroup !== filters.primaryMuscleGroup ||
-      urlFilters.force !== filters.force ||
-      urlFilters.level !== filters.level;
-
-    if (paramsChanged && !isUsingClientSearch) {
-      // Update filters state to match URL
-      setFilters(urlFilters);
-      
-      // Fetch new data for the URL parameters
-      fetchFilteredData(urlFilters, currentPageFromURL);
-    }
-  }, [searchParams, page, filters, isUsingClientSearch, fetchFilteredData]);
-
-  // Handle search results from debounced search
-  const handleSearchResults = useCallback((results: ExerciseListResponse) => {
-    // Non-blocking updates - results and URL are already handled by the hook
-    setExercises(results.exercises);
-    setTotal(results.total);
-    setPage(1); // Reset to page 1 for search results
-    setIsUsingClientSearch(true);
-  }, []);
-
-  // Handle search status changes
-  const handleSearchStatusChange = useCallback((
-    status: 'idle' | 'loading' | 'success' | 'error', 
-    error?: string | null
-  ) => {
-    setIsSearching(status === 'loading');
-    setSearchError(error || null);
-  }, []);
-
   // Handle filter changes
   const handleFiltersChange = useCallback((newFilters: Filters) => {
-    const hasFiltersChanged = filtersChanged(filters, newFilters);
-    
     setFilters(newFilters);
     
-    // If it's a search change, let the debounced search handle it
-    if (newFilters.search !== filters.search) {
-      // If search was cleared, we need to trigger the search immediately
-      if (!newFilters.search || newFilters.search.trim().length === 0) {
-        // This will be handled by the DebouncedSearchInput component
-      }
-      return;
-    }
+    // Reset to page 1 when filters change
+    const newPage = 1;
+    setPage(newPage);
     
-    // For non-search filter changes, fetch data via API
-    if (hasFiltersChanged) {
-      fetchFilteredData(newFilters, 1);
-    }
-  }, [filters, filtersChanged, fetchFilteredData]);
+    // Perform instant client-side search
+    performClientSearch(newFilters, newPage);
+    
+    // Update URL
+    updateURL(newFilters, newPage);
+  }, [performClientSearch, updateURL]);
+
+  // Handle pagination changes
+  const handlePageChange = useCallback((newPage: number) => {
+    setPage(newPage);
+    performClientSearch(filters, newPage);
+    updateURL(filters, newPage);
+    
+    // Scroll to top of exercise grid
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [filters, performClientSearch, updateURL]);
 
   // Handle clear filters
   const handleClearFilters = useCallback(() => {
     const clearedFilters: Filters = {};
-    fetchFilteredData(clearedFilters, 1);
-  }, [fetchFilteredData]);
+    handleFiltersChange(clearedFilters);
+  }, [handleFiltersChange]);
 
   // Calculate total pages
   const totalPages = Math.ceil(total / 15);
+
+  // Show loading state while cache is initializing
+  if (!cacheLoaded && storeIsLoading) {
+    return (
+      <>
+        {/* Filters */}
+        <div className="mb-12">
+          <ExerciseFilters 
+            filters={filters}
+            filterOptions={filterOptions}
+            onFiltersChange={() => {}}
+            onClearFilters={() => {}}
+            isLoading={true}
+          />
+        </div>
+
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading exercise library...</p>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -240,20 +202,25 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
           filterOptions={filterOptions}
           onFiltersChange={handleFiltersChange}
           onClearFilters={handleClearFilters}
-          onSearchResults={handleSearchResults}
-          onSearchStatusChange={handleSearchStatusChange}
           isLoading={isSearching}
         />
       </div>
 
       {/* Search Error */}
-      {searchError && (
+      {(searchError || storeError) && (
         <div className="mb-8">
           <Alert variant="destructive">
             <AlertDescription>
-              {searchError}
+              {searchError || storeError}
             </AlertDescription>
           </Alert>
+        </div>
+      )}
+
+      {/* Cache Status Indicator (dev only) */}
+      {process.env.NODE_ENV === 'development' && cacheLoaded && (
+        <div className="mb-4 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-800">
+          ✅ Client-side cache active: {exerciseCache.getStats().exerciseCount} exercises cached, instant search enabled
         </div>
       )}
 
@@ -266,8 +233,8 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
             <>
               Showing {exercises.length} of {total} exercises
               {page > 1 && ` (Page ${page} of ${totalPages})`}
-              {isUsingClientSearch && filters.search && (
-                <span className="ml-2 text-brand-blue">• Live search results</span>
+              {filters.search && (
+                <span className="ml-2 text-brand-blue">• Instant search results</span>
               )}
             </>
           )}
@@ -310,13 +277,14 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
         </div>
       )}
 
-      {/* Pagination - only show if not using client search or if search has multiple pages */}
-      {totalPages > 1 && (!isUsingClientSearch || !filters.search) && (
+      {/* Pagination */}
+      {totalPages > 1 && (
         <div className="flex justify-center">
           <PaginationClient
             currentPage={page}
             totalPages={totalPages}
             filters={filters}
+            onPageChange={handlePageChange}
           />
         </div>
       )}
