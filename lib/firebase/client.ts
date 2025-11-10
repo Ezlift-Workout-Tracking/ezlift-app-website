@@ -1,4 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 
 // Read env statically so Next can inline them in client bundle
 const firebaseConfig = {
@@ -31,6 +32,7 @@ if (missing.length) {
 
 export const firebaseApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig as any);
 
-export default firebaseApp;
+export const auth = getAuth(firebaseApp);
 
+export default firebaseApp;
 

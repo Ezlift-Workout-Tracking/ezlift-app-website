@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Mail, Lock, Chrome, Apple } from "lucide-react";
@@ -249,14 +248,44 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
-        <CardDescription className="text-center">
-          Enter your credentials to access your account
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="w-full space-y-6">
+      {/* Social Login Buttons - Prioritized */}
+      <div className="space-y-3">
+        <Button
+          variant="outline"
+          onClick={handleAppleSignIn}
+          disabled={isLoading}
+          className="w-full h-12 bg-black text-white hover:bg-gray-800 border-black font-semibold"
+          aria-label="Sign in with Apple"
+        >
+          <Apple className="mr-3 h-5 w-5 fill-current" />
+          Continue with Apple
+        </Button>
+        
+        <Button
+          variant="outline"
+          onClick={handleGoogleSignIn}
+          disabled={isLoading}
+          className="w-full h-12 bg-white border-border-gray text-text-primary hover:bg-grayscale-50 hover:text-text-primary font-semibold"
+          aria-label="Sign in with Google"
+        >
+          <Chrome className="mr-3 h-5 w-5" />
+          Continue with Google
+        </Button>
+      </div>
+
+      {/* Divider */}
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <Separator className="w-full" />
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="bg-white px-2 text-text-secondary">Or with email</span>
+        </div>
+      </div>
+
+      {/* Email/Password Form */}
+      <div className="space-y-4">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -265,8 +294,8 @@ export function LoginForm() {
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
-                className="pl-10 h-12 text-base"
+                placeholder="you@example.com"
+                className="pl-10 h-12 rounded-input border-border-gray"
                 autoComplete="email"
                 aria-invalid={errors.email ? "true" : "false"}
                 aria-describedby={errors.email ? "email-error" : undefined}
@@ -288,7 +317,7 @@ export function LoginForm() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
-                className="pl-10 pr-10 h-12 text-base"
+                className="pl-10 pr-10 h-12 rounded-input border-border-gray"
                 autoComplete="current-password"
                 aria-invalid={errors.password ? "true" : "false"}
                 aria-describedby={errors.password ? "password-error" : undefined}
@@ -316,20 +345,10 @@ export function LoginForm() {
             )}
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="remember"
-                checked={rememberMe}
-                onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-              />
-              <Label htmlFor="remember" className="text-sm">
-                Remember me
-              </Label>
-            </div>
+          <div className="flex items-center justify-end">
             <Link
               href="/forgot-password"
-              className="text-sm text-primary hover:underline"
+              className="text-sm text-brand-blue hover:underline font-medium"
             >
               Forgot password?
             </Link>
@@ -339,59 +358,48 @@ export function LoginForm() {
             <div
               role="alert"
               aria-live="polite"
-              className="text-sm text-destructive text-center p-3 bg-destructive/10 rounded-md border border-destructive/20"
+              className="text-sm text-error-red text-center p-3 bg-error-red/10 rounded-input border border-error-red/20"
             >
               {errors.root.message}
             </div>
           )}
 
-          <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={isLoading || !watch("email") || !watch("password")}>
-            {isLoading ? "Signing in..." : "Sign in"}
+          <Button 
+            type="submit" 
+            className="w-full h-12 bg-brand-orange hover:bg-[#E55F00] text-black font-semibold rounded-input"
+            disabled={isLoading || !watch("email") || !watch("password")}
+          >
+            {isLoading ? "Signing in..." : "Login"}
           </Button>
         </form>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              Or continue with
-            </span>
-          </div>
+        {/* Footer Link */}
+        <div className="text-center">
+          <p className="text-sm text-text-secondary">
+            Don&apos;t have an account?{" "}
+            <Link href="/signup" className="text-brand-blue hover:underline font-medium">
+              Sign up
+            </Link>
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-3">
-          <Button
-            variant="outline"
-            onClick={handleAppleSignIn}
-            disabled={isLoading}
-            className="w-full h-12 bg-black text-white hover:bg-gray-800 border-black text-base font-semibold"
-            aria-label="Sign in with Apple"
-          >
-            <Apple className="mr-3 h-5 w-5 fill-current" />
-            Continue with Apple
-          </Button>
-          
-          <Button
-            variant="outline"
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-            className="w-full h-12 text-base font-semibold"
-            aria-label="Sign in with Google"
-          >
-            <Chrome className="mr-3 h-5 w-5" />
-            Continue with Google
-          </Button>
+        {/* Footer Links */}
+        <div className="mt-8 text-center">
+          <div className="flex justify-center items-center gap-4 text-sm text-text-secondary">
+            <Link href="/terms" className="hover:text-brand-blue hover:underline">
+              Terms & Conditions
+            </Link>
+            <span>|</span>
+            <Link href="/privacy" className="hover:text-brand-blue hover:underline">
+              Privacy
+            </Link>
+            <span>|</span>
+            <Link href="/contact" className="hover:text-brand-blue hover:underline">
+              Contact
+            </Link>
+          </div>
         </div>
-
-        <div className="text-center text-sm">
-          Don't have an account?{" "}
-          <Link href="/signup" className="text-primary hover:underline">
-            Sign up
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 } 

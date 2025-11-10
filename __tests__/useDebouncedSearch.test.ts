@@ -15,9 +15,10 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
-// Mock lodash.debounce
-jest.mock('lodash.debounce', () => {
-  return jest.fn((fn, delay, options) => {
+// Mock lodash debounce
+jest.mock('lodash', () => ({
+  ...jest.requireActual('lodash'),
+  debounce: jest.fn((fn, delay, options) => {
     const debouncedFn = (...args: any[]) => {
       // For testing, we'll simulate the debounce behavior
       if (options?.leading === false && options?.trailing === true) {
@@ -27,8 +28,8 @@ jest.mock('lodash.debounce', () => {
     };
     debouncedFn.cancel = jest.fn();
     return debouncedFn;
-  });
-});
+  }),
+}));
 
 // Mock user agent for mobile detection
 const mockUserAgent = (userAgent: string) => {

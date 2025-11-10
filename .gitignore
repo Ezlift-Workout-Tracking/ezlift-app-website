@@ -55,3 +55,4 @@ app/sitemap.xml
 .env.*.bak*
 *.bak.*
 
+# BMAD (local only)
