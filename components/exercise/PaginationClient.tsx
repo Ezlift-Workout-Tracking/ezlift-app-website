@@ -9,12 +9,14 @@ interface PaginationClientProps {
   currentPage: number;
   totalPages: number;
   filters: Filters;
+  onPageChange?: (page: number) => void; // Optional callback for custom page handling
 }
 
 const PaginationClient: React.FC<PaginationClientProps> = ({
   currentPage,
   totalPages,
   filters,
+  onPageChange,
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -24,6 +26,13 @@ const PaginationClient: React.FC<PaginationClientProps> = ({
   const activePage = urlPage || currentPage;
 
   const navigateToPage = (page: number) => {
+    // If custom callback provided, use it (for cached data)
+    if (onPageChange) {
+      onPageChange(page);
+      return;
+    }
+
+    // Otherwise, use default router navigation
     const params = new URLSearchParams(searchParams);
     
     // Update filter parameters
