@@ -39,14 +39,13 @@ export async function GET(request: NextRequest) {
       filters.level = difficulty as 'Beginner' | 'Intermediate' | 'Expert';
     }
 
-    // Validate pagination parameters
-    // Allow up to 2000 for cache loading, but recommend smaller pages for regular use
-    if (page < 1 || limit < 1 || limit > 2000) {
-      return NextResponse.json(
-        { error: 'Invalid pagination parameters' },
-        { status: 400 }
-      );
-    }
+  // Validate pagination parameters
+  if (page < 1 || limit < 1 || limit > 100) {
+    return NextResponse.json(
+      { error: 'Invalid pagination parameters (max 100 per page)' },
+      { status: 400 }
+    );
+  }
 
     // Fetch exercises
     const result = await exerciseDataService.getExercises(filters, page, limit);
