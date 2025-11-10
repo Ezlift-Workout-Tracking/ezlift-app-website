@@ -56,9 +56,8 @@ export function PersonalRecordsCard() {
         isLoading={isLoading}
         isError={!!error}
         errorMessage="Failed to load personal records"
-        analyticsProps={{ hasData: prs.length > 0, prCount: prs.length, dateRange: range }}
       >
-        {/* Body hidden during loading/error */}
+        {null}
       </DashboardCard>
     );
   }
