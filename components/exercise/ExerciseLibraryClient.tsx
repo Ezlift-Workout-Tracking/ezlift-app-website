@@ -44,11 +44,12 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
   const storeIsLoading = useExerciseStore(state => state.isLoading);
   const storeError = useExerciseStore(state => state.error);
 
-  // Initialize cache on mount
+  // Initialize cache on mount - NON-BLOCKING
+  // Show SSR data immediately, load cache in background
   useEffect(() => {
     const initCache = async () => {
       try {
-        setIsSearching(true);
+        // Load cache in background (non-blocking)
         await exerciseCache.loadAllExercises();
         
         // Update filter options from cache if available
@@ -59,23 +60,20 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
         
         setCacheLoaded(true);
         
-        // Apply current filters with cached data
-        performClientSearch(filters, page);
+        // Only switch to cached data if user hasn't changed filters/page yet
+        // This prevents jarring UI changes if they're already browsing
+        if (page === currentPage && JSON.stringify(filters) === JSON.stringify(initialFilters)) {
+          performClientSearch(filters, page);
+        }
       } catch (error) {
         console.error('Failed to initialize cache:', error);
-        // Only show error if we don't have any exercises to display
-        if (exercises.length === 0) {
-          setSearchError('Failed to load exercise library. Please refresh the page.');
-        } else {
-          // We have SSR data, just log the error but don't show to user
-          console.warn('Cache initialization failed, but displaying server-side data');
-          setCacheLoaded(false); // Mark cache as not loaded, will use SSR data
-        }
-      } finally {
-        setIsSearching(false);
+        // We have SSR data, so just log the error - no need to show to user
+        console.warn('Cache initialization failed, but displaying server-side data');
+        setCacheLoaded(false);
       }
     };
 
+    // Start cache loading immediately but don't wait for it
     initCache();
   }, []); // Run once on mount
 
@@ -226,8 +224,8 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
 
       {/* Cache Status Indicator (dev only - will not appear in production) */}
       {process.env.NODE_ENV === 'development' && cacheLoaded && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 font-mono">
-          <span className="font-bold text-green-900">[DEV MODE]</span> ✅ Client-side cache active: {exerciseCache.getStats().exerciseCount} exercises cached, instant search enabled
+        <div className="mb-4 p-2 bg-green-50 border border-green-200 rounded text-xs text-green-700 font-mono">
+          <span className="font-bold">[DEV]</span> Cache ready: {exerciseCache.getStats().exerciseCount} exercises • Instant search enabled
         </div>
       )}
 
