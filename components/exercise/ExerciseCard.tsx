@@ -24,28 +24,33 @@ export default function ExerciseCard({ exercise }: ExerciseCardProps) {
   
   useEffect(() => {
     // If we don't have Contentful data yet and exercise doesn't have content, try to fetch it
+    // Defer fetching to not block initial render
     if (!contentfulData && !exercise.content) {
       let isMounted = true;
       
-      const fetchContentfulData = async () => {
-        try {
-          const response = await fetch(`/api/exercises/${exercise.id}/content`);
-          if (response.ok) {
-            const data = await response.json();
-            if (isMounted && data) {
-              setContentfulData({ title: data.title, slug: data.slug });
+      // Defer Contentful fetch to allow card to render immediately
+      const timeoutId = setTimeout(() => {
+        const fetchContentfulData = async () => {
+          try {
+            const response = await fetch(`/api/exercises/${exercise.id}/content`);
+            if (response.ok) {
+              const data = await response.json();
+              if (isMounted && data) {
+                setContentfulData({ title: data.title, slug: data.slug });
+              }
             }
+          } catch (error) {
+            // Silently fail - just use database name
+            console.debug('No Contentful data for exercise:', exercise.id);
           }
-        } catch (error) {
-          // Silently fail - just use database name
-          console.debug('No Contentful data for exercise:', exercise.id);
-        }
-      };
-      
-      fetchContentfulData();
+        };
+        
+        fetchContentfulData();
+      }, 100); // Small delay to let cards render first
       
       return () => {
         isMounted = false;
+        clearTimeout(timeoutId);
       };
     }
   }, [exercise.id, exercise.content, contentfulData]);

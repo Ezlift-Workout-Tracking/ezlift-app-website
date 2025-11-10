@@ -176,27 +176,7 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
   const totalPages = Math.ceil(total / 15);
 
   // Show loading state while cache is initializing
-  if (!cacheLoaded && storeIsLoading) {
-    return (
-      <>
-        {/* Filters */}
-        <div className="mb-12">
-          <ExerciseFilters 
-            filters={filters}
-            filterOptions={filterOptions}
-            onFiltersChange={() => {}}
-            onClearFilters={() => {}}
-            isLoading={true}
-          />
-        </div>
-
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading exercise library...</p>
-        </div>
-      </>
-    );
-  }
+  // Removed loading blocker - we now show SSR data immediately while cache loads in background
 
   return (
     <>
