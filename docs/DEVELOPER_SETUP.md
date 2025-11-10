@@ -93,8 +93,9 @@ CONTENTFUL_ENVIRONMENT=master
 # ============================================
 # ANALYTICS (Required for Web App)
 # ============================================
-# Amplitude Project: ezlift-website (ID: 100016347)
-NEXT_PUBLIC_AMPLITUDE_API_KEY=bc567f65128dc624a565d42c6e269381
+# Get your Amplitude API key from: https://analytics.amplitude.com/settings/projects
+# Note: Create a separate Amplitude project for development/testing
+NEXT_PUBLIC_AMPLITUDE_API_KEY=your_amplitude_api_key_here
 
 # GA Measurement ID already in public code (update if needed)
 
