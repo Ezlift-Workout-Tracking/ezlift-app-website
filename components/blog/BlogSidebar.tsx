@@ -49,7 +49,9 @@ export function BlogSidebar({ currentPost, relatedPosts = [] }: BlogSidebarProps
               />
             </Link>
             <Link
-              href="/android"
+              href="https://play.google.com/store/apps/details?id=com.ezworks.ezlift"
+              target="_blank"
+              rel="noopener noreferrer"
               className="transition-transform hover:scale-105 duration-200"
             >
               <Image

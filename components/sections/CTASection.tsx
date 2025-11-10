@@ -31,7 +31,9 @@ export function CTASection() {
               />
             </Link>
             <Link
-              href="/android"
+              href={BRAND.links.playStore}
+              target="_blank"
+              rel="noopener noreferrer"
               className="transition-transform hover:scale-105"
             >
               <Image
