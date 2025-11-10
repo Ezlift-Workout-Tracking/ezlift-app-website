@@ -12,6 +12,8 @@ const config: Config = {
       colors: {
         // Primary Orange (Brand Color) - from theme.ts
         primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
           50: '#FFF0E5',
           100: '#FFD1B2',
           200: '#FFC299',
@@ -22,6 +24,8 @@ const config: Config = {
         
         // Secondary Blue (Selection Color) - from theme.ts
         secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
           25: '#4CB3F8',
           50: '#2EA6F6',
           100: '#1099F5',  // Selection Blue - Selection states, links, charts
@@ -144,14 +148,6 @@ const config: Config = {
         popover: {
           DEFAULT: 'hsl(var(--popover))',
           foreground: 'hsl(var(--popover-foreground))',
-        },
-        primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
-        },
-        secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
         },
         muted: {
           DEFAULT: 'hsl(var(--muted))',
