@@ -224,10 +224,10 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
         </div>
       )}
 
-      {/* Cache Status Indicator (dev only) */}
+      {/* Cache Status Indicator (dev only - will not appear in production) */}
       {process.env.NODE_ENV === 'development' && cacheLoaded && (
-        <div className="mb-4 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-800">
-          ✅ Client-side cache active: {exerciseCache.getStats().exerciseCount} exercises cached, instant search enabled
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 font-mono">
+          <span className="font-bold text-green-900">[DEV MODE]</span> ✅ Client-side cache active: {exerciseCache.getStats().exerciseCount} exercises cached, instant search enabled
         </div>
       )}
 
