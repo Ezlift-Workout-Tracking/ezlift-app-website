@@ -86,7 +86,7 @@ const PaginationClient: React.FC<PaginationClientProps> = ({
           variant={i === activePage ? "default" : "outline"}
           size="sm"
           onClick={() => navigateToPage(i)}
-          className={i === activePage ? "bg-gray-800 hover:bg-gray-700 text-white" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"}
+          className={i === activePage ? "bg-grayscale-800 hover:bg-grayscale-700 text-white" : "bg-white border-grayscale-200 text-grayscale-700 hover:bg-grayscale-50 hover:text-grayscale-900"}
         >
           {i}
         </Button>
@@ -97,13 +97,13 @@ const PaginationClient: React.FC<PaginationClientProps> = ({
   };
 
   return (
-    <div className="flex justify-center items-center space-x-2 bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+    <div className="flex justify-center items-center space-x-2 bg-white rounded-lg p-4 shadow-sm border border-grayscale-100">
       {activePage > 1 && (
         <Button 
           variant="outline" 
           size="sm" 
           onClick={() => navigateToPage(activePage - 1)}
-          className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+          className="bg-white border-grayscale-200 text-grayscale-700 hover:bg-grayscale-50 hover:text-grayscale-900"
         >
           Previous
         </Button>
@@ -116,7 +116,7 @@ const PaginationClient: React.FC<PaginationClientProps> = ({
           variant="outline" 
           size="sm" 
           onClick={() => navigateToPage(activePage + 1)}
-          className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+          className="bg-white border-grayscale-200 text-grayscale-700 hover:bg-grayscale-50 hover:text-grayscale-900"
         >
           Next
         </Button>

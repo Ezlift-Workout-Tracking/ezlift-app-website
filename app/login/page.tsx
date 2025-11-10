@@ -12,12 +12,12 @@ export default async function LoginPage() {
   await requireGuest();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-white px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
-          <p className="text-muted-foreground mt-2">
-            Sign in to continue your fitness journey
+          <h1 className="text-page-title text-text-primary font-bold">Welcome back to EZLift</h1>
+          <p className="text-base text-text-secondary mt-2">
+            Login to access your workouts
           </p>
         </div>
         <LoginForm />

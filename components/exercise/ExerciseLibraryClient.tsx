@@ -259,7 +259,7 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
 
       {/* Results Summary */}
       <div className="mb-8">
-        <p className="text-sm text-gray-600 text-center">
+        <p className="text-sm text-grayscale-500 text-center">
           {isSearching ? (
             'Searching...'
           ) : (
@@ -267,7 +267,7 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
               Showing {exercises.length} of {total} exercises
               {page > 1 && ` (Page ${page} of ${totalPages})`}
               {isUsingClientSearch && filters.search && (
-                <span className="ml-2 text-blue-600">• Live search results</span>
+                <span className="ml-2 text-brand-blue">• Live search results</span>
               )}
             </>
           )}

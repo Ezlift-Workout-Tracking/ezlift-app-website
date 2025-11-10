@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Mail, Lock, Chrome, Check, X, Apple } from "lucide-react";
@@ -274,14 +273,44 @@ export function SignupForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Create account</CardTitle>
-        <CardDescription className="text-center">
-          Enter your details to create your account
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="w-full space-y-6">
+      {/* Social Signup Buttons - Prioritized */}
+      <div className="space-y-3">
+        <Button
+          variant="outline"
+          onClick={handleAppleSignIn}
+          disabled={isLoading}
+          className="w-full h-12 bg-black text-white hover:bg-gray-800 border-black font-semibold"
+          aria-label="Sign up with Apple"
+        >
+          <Apple className="mr-3 h-5 w-5 fill-current" />
+          Continue with Apple
+        </Button>
+        
+        <Button
+          variant="outline"
+          onClick={handleGoogleSignIn}
+          disabled={isLoading}
+          className="w-full h-12 bg-white border-border-gray text-text-primary hover:bg-grayscale-50 hover:text-text-primary font-semibold"
+          aria-label="Sign up with Google"
+        >
+          <Chrome className="mr-3 h-5 w-5" />
+          Continue with Google
+        </Button>
+      </div>
+
+      {/* Divider */}
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <Separator className="w-full" />
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="bg-white px-2 text-text-secondary">Or with email</span>
+        </div>
+      </div>
+
+      {/* Email/Password Form */}
+      <div className="space-y-4">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -290,8 +319,8 @@ export function SignupForm() {
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
-                className="pl-10 h-12 text-base"
+                placeholder="you@example.com"
+                className="pl-10 h-12 rounded-input border-border-gray"
                 autoComplete="email"
                 aria-invalid={errors.email ? "true" : "false"}
                 aria-describedby={errors.email ? "email-error" : undefined}
@@ -313,7 +342,7 @@ export function SignupForm() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Create a password"
-                className="pl-10 pr-10 h-12 text-base"
+                className="pl-10 pr-10 h-12 rounded-input border-border-gray"
                 autoComplete="new-password"
                 aria-invalid={errors.password ? "true" : "false"}
                 aria-describedby={errors.password ? "password-error password-requirements" : "password-requirements"}
@@ -344,11 +373,11 @@ export function SignupForm() {
                 {passwordRequirements.map((requirement, index) => (
                   <div key={index} className="flex items-center gap-2">
                     {requirement.met ? (
-                      <Check className="h-3 w-3 text-green-500" aria-hidden="true" />
+                      <Check className="h-3 w-3 text-success-500" aria-hidden="true" />
                     ) : (
-                      <X className="h-3 w-3 text-red-500" aria-hidden="true" />
+                      <X className="h-3 w-3 text-alert-error-100" aria-hidden="true" />
                     )}
-                    <span className={requirement.met ? "text-green-600" : "text-red-600"}>
+                    <span className={requirement.met ? "text-success-500" : "text-alert-error-100"}>
                       {requirement.label}
                     </span>
                   </div>
@@ -371,7 +400,7 @@ export function SignupForm() {
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm your password"
-                className="pl-10 pr-10 h-12 text-base"
+                className="pl-10 pr-10 h-12 rounded-input border-border-gray"
                 autoComplete="new-password"
                 aria-invalid={errors.confirmPassword ? "true" : "false"}
                 aria-describedby={errors.confirmPassword ? "confirm-password-error password-match" : "password-match"}
@@ -397,11 +426,11 @@ export function SignupForm() {
             {confirmPassword && (
               <div id="password-match" className="flex items-center gap-2 text-sm" aria-live="polite">
                 {passwordsMatch ? (
-                  <Check className="h-3 w-3 text-green-500" aria-hidden="true" />
+                  <Check className="h-3 w-3 text-success-500" aria-hidden="true" />
                 ) : (
-                  <X className="h-3 w-3 text-red-500" aria-hidden="true" />
+                  <X className="h-3 w-3 text-alert-error-100" aria-hidden="true" />
                 )}
-                <span className={passwordsMatch ? "text-green-600" : "text-red-600"}>
+                <span className={passwordsMatch ? "text-success-500" : "text-alert-error-100"}>
                   Passwords {passwordsMatch ? "match" : "don't match"}
                 </span>
               </div>
@@ -422,13 +451,13 @@ export function SignupForm() {
                 onCheckedChange={(checked) => setValue("terms", checked as boolean)}
                 className="mt-1"
               />
-              <Label htmlFor="terms" className="text-sm leading-relaxed">
+              <Label htmlFor="terms" className="text-sm leading-relaxed text-text-secondary">
                 I agree to the{" "}
-                <Link href="/terms" className="text-primary hover:underline">
+                <Link href="/terms" className="text-brand-blue hover:underline">
                   Terms of Service
                 </Link>{" "}
                 and{" "}
-                <Link href="/privacy" className="text-primary hover:underline">
+                <Link href="/privacy" className="text-brand-blue hover:underline">
                   Privacy Policy
                 </Link>
               </Label>
@@ -452,55 +481,40 @@ export function SignupForm() {
 
           <Button 
             type="submit" 
-            className="w-full h-12 text-base font-semibold" 
+            className="w-full h-12 bg-brand-orange hover:bg-[#E55F00] text-black font-semibold rounded-input" 
             disabled={isLoading || !watch("email") || !watch("password") || !watch("confirmPassword") || !watch("terms") || !passwordsMatch}
           >
-            {isLoading ? "Creating account..." : "Create account"}
+            {isLoading ? "Creating account..." : "Create Account"}
           </Button>
         </form>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              Or continue with
-            </span>
-          </div>
+        {/* Footer Link */}
+        <div className="text-center">
+          <p className="text-sm text-text-secondary">
+            Already have an account?{" "}
+            <Link href="/login" className="text-brand-blue hover:underline font-medium">
+              Sign in
+            </Link>
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-3">
-          <Button
-            variant="outline"
-            onClick={handleAppleSignIn}
-            disabled={isLoading}
-            className="w-full h-12 bg-black text-white hover:bg-gray-800 border-black text-base font-semibold"
-            aria-label="Sign up with Apple"
-          >
-            <Apple className="mr-3 h-5 w-5 fill-current" />
-            Continue with Apple
-          </Button>
-          
-          <Button
-            variant="outline"
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-            className="w-full h-12 text-base font-semibold"
-            aria-label="Sign up with Google"
-          >
-            <Chrome className="mr-3 h-5 w-5" />
-            Continue with Google
-          </Button>
+        {/* Footer Links */}
+        <div className="mt-8 text-center">
+          <div className="flex justify-center items-center gap-4 text-sm text-text-secondary">
+            <Link href="/terms" className="hover:text-brand-blue hover:underline">
+              Terms & Conditions
+            </Link>
+            <span>|</span>
+            <Link href="/privacy" className="hover:text-brand-blue hover:underline">
+              Privacy
+            </Link>
+            <span>|</span>
+            <Link href="/contact" className="hover:text-brand-blue hover:underline">
+              Contact
+            </Link>
+          </div>
         </div>
-
-        <div className="text-center text-sm">
-          Already have an account?{" "}
-          <Link href="/login" className="text-primary hover:underline">
-            Sign in
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 } 
