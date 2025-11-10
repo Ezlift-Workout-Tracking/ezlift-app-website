@@ -70,6 +70,9 @@ export interface ContentfulExercise {
     name: string; // Exercise name
     slug: string; // URL slug
     howTo?: Document; // Rich text content for instructions
+    seoTitle?: string; // SEO title
+    seoDescription?: string; // SEO description
+    coverImage?: ContentfulAsset | ContentfulAsset[]; // Cover image
     author?: ContentfulAuthor; // Reference to author
   };
 }
@@ -102,6 +105,9 @@ export interface ExerciseContent {
   title: string; // Exercise name from Contentful
   slug: string; // URL slug
   rich_content?: Document; // How To instructions
+  seo_title?: string; // SEO title
+  seo_description?: string; // SEO description
+  cover_image?: string; // Cover image URL
   author?: BlogAuthor; // Author information
   published: boolean;
   createdAt: string;
@@ -165,6 +171,9 @@ const transformExerciseContent = (content: ContentfulExercise): ExerciseContent 
     title: content.fields.name, // Exercise name
     slug: content.fields.slug,
     rich_content: content.fields.howTo, // How To instructions
+    seo_title: content.fields.seoTitle,
+    seo_description: content.fields.seoDescription,
+    cover_image: content.fields.coverImage ? getAssetUrl(content.fields.coverImage) : undefined,
     author: content.fields.author ? transformAuthor(content.fields.author) : undefined,
     published: true, // All entries are considered published
     createdAt: content.sys.createdAt,
