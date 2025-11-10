@@ -11,6 +11,14 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || EXERCISE_LIBRARY_PAGE_SIZE.toString());
     
+    // Validate pagination parameters (including NaN check)
+    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1 || limit > 100) {
+      return NextResponse.json(
+        { error: 'Invalid pagination parameters (max 100 per page)' },
+        { status: 400 }
+      );
+    }
+    
     // Build filters from search params
     const filters: ExerciseFilters = {};
     
@@ -38,14 +46,6 @@ export async function GET(request: NextRequest) {
     if (difficulty) {
       filters.level = difficulty as 'Beginner' | 'Intermediate' | 'Expert';
     }
-
-  // Validate pagination parameters
-  if (page < 1 || limit < 1 || limit > 100) {
-    return NextResponse.json(
-      { error: 'Invalid pagination parameters (max 100 per page)' },
-      { status: 400 }
-    );
-  }
 
     // Fetch exercises
     const result = await exerciseDataService.getExercises(filters, page, limit);
