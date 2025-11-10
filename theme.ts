@@ -1,5 +1,3 @@
-import { SuccessToast } from "react-native-toast-message";
-
 const theme = {
   colors: {
     primary: {
