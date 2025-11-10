@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Dumbbell } from 'lucide-react';
 import { FadeIn } from '@/components/animations/FadeIn';
@@ -24,14 +24,17 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
   filterOptions: initialFilterOptions,
   currentPage,
 }) => {
-  const [exercises] = useState<Exercise[]>(initialData.exercises);
-  const [total] = useState(initialData.total);
   const [filters, setFilters] = useState<Filters>(initialFilters);
-  const [filterOptions] = useState<FilterOptions>(initialFilterOptions);
   const [page, setPage] = useState(currentPage);
 
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Sync state with props when server refetches new data
+  useEffect(() => {
+    setFilters(initialFilters);
+    setPage(currentPage);
+  }, [initialData, initialFilters, currentPage]);
 
   // REMOVED: Automatic full cache loading on mount
   // In production (serverless), loading 1000 exercises causes 504 timeouts
@@ -120,8 +123,8 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
     handleFiltersChange(clearedFilters);
   }, [handleFiltersChange]);
 
-  // Calculate total pages
-  const totalPages = Math.ceil(total / 15);
+  // Calculate total pages from props
+  const totalPages = Math.ceil(initialData.total / 15);
 
   // Show loading state while cache is initializing
   // Removed loading blocker - we now show SSR data immediately while cache loads in background
@@ -132,7 +135,7 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
       <div className="mb-12">
         <ExerciseFilters 
           filters={filters}
-          filterOptions={filterOptions}
+          filterOptions={initialFilterOptions}
           onFiltersChange={handleFiltersChange}
           onClearFilters={handleClearFilters}
           isLoading={false}
@@ -144,16 +147,16 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
       {/* Results Summary */}
       <div className="mb-8">
         <p className="text-sm text-grayscale-500 text-center">
-          Showing {exercises.length} of {total} exercises
+          Showing {initialData.exercises.length} of {initialData.total} exercises
           {page > 1 && ` (Page ${page} of ${totalPages})`}
         </p>
       </div>
 
       {/* Exercise Grid */}
-      {exercises.length > 0 ? (
+      {initialData.exercises.length > 0 ? (
         <div className="container max-w-7xl mx-auto mb-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
-            {exercises.map((exercise, index) => (
+            {initialData.exercises.map((exercise, index) => (
               <FadeIn key={exercise.id} delay={Math.min(index * 25, 200)}>
                 <ExerciseCard exercise={exercise} />
               </FadeIn>
