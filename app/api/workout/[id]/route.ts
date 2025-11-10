@@ -10,14 +10,17 @@ const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL || 'https://ezlift-server-
  * GET /api/workout/:id
  * Proxies workout detail lookup to backend API.
  */
-export async function GET(_request: NextRequest, context: { params: { id: string } }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const sessionToken = await getSessionToken();
     if (!sessionToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = context.params;
+    const { id } = await params;
     const url = `${BACKEND_BASE_URL}/api/workout/${encodeURIComponent(id)}`;
 
     const res = await fetch(url, {

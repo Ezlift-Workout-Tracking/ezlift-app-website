@@ -10,14 +10,17 @@ const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL || 'https://ezlift-server-
  * Proxies single exercise lookup to backend API
  * Requires authentication
  */
-export async function GET(_request: NextRequest, context: { params: { id: string } }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const sessionToken = await getSessionToken();
     if (!sessionToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const id = context.params.id;
+    const { id } = await params;
     const backendUrl = `${BACKEND_BASE_URL}/api/exercise/${encodeURIComponent(id)}`;
 
     const response = await fetch(backendUrl, {
