@@ -311,15 +311,20 @@ export async function getMultipleExerciseContents(exerciseIds: string[]): Promis
   }
 
   try {
+    const queryString = exerciseIds.join(',');
+    console.log(`🔍 Query string length: ${queryString.length} characters`);
+    console.log(`🔍 First 10 IDs: ${exerciseIds.slice(0, 10).join(', ')}`);
+    
     const response = await client.getEntries<any>({
       content_type: 'exercise',
-      'fields.id[in]': exerciseIds.join(','), // Maps to database exercise IDs
+      'fields.id[in]': queryString, // Maps to database exercise IDs
       include: 10,
       limit: 1000, // Adjust based on your needs
     });
 
     console.log(`\n✅ ========================================`);
     console.log(`✅ CONTENTFUL: Received ${response.items.length} entries from Contentful`);
+    console.log(`✅ Total items in Contentful: ${response.total || response.items.length}`);
     console.log(`✅ ========================================\n`);
 
     response.items.forEach((item: any) => {

@@ -11,6 +11,10 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || EXERCISE_LIBRARY_PAGE_SIZE.toString());
     
+    console.log(`\n🌐 ========================================`);
+    console.log(`🌐 API /exercises called: page=${page}, limit=${limit}`);
+    console.log(`🌐 ========================================\n`);
+    
     // Build filters from search params
     const filters: ExerciseFilters = {};
     
