@@ -141,12 +141,8 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
       {/* Results Summary */}
       <div className="mb-8">
         <p className="text-sm text-grayscale-500 text-center">
-          {(
-            <>
-              Showing {exercises.length} of {total} exercises
-              {page > 1 && ` (Page ${page} of ${totalPages})`}
-            </>
-          )}
+          Showing {exercises.length} of {total} exercises
+          {page > 1 && ` (Page ${page} of ${totalPages})`}
         </p>
       </div>
 
@@ -168,15 +164,13 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
             title="No Exercises Found"
             description="Try adjusting your filters or search terms to find exercises that match your criteria."
             action={
-              (
-                <Button 
-                  variant="outline" 
-                  onClick={handleClearFilters}
-                  className="mt-4"
-                >
-                  Clear all filters
-                </Button>
-              ) : undefined
+              <Button 
+                variant="outline" 
+                onClick={handleClearFilters}
+                className="mt-4"
+              >
+                Clear all filters
+              </Button>
             }
           />
         </div>
