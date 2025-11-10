@@ -83,7 +83,7 @@ export async function detectUserDataState(): Promise<UserDataState> {
       sessionsCount = logs.length;
     } else {
       // Backend returns object with sessions property
-      hasSessions = logs?.sessions && logs.sessions.length > 0;
+      hasSessions = !!(logs?.sessions && logs.sessions.length > 0);
       sessionsCount = logs?.sessions?.length || 0;
     }
     
