@@ -157,7 +157,7 @@ const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search exercises..."
             disabled={isLoading}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+            className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-brand-blue focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
           />
         </div>
 

@@ -63,7 +63,14 @@ const ExerciseLibraryClient: React.FC<ExerciseLibraryClientProps> = ({
         performClientSearch(filters, page);
       } catch (error) {
         console.error('Failed to initialize cache:', error);
-        setSearchError('Failed to load exercise library. Please refresh the page.');
+        // Only show error if we don't have any exercises to display
+        if (exercises.length === 0) {
+          setSearchError('Failed to load exercise library. Please refresh the page.');
+        } else {
+          // We have SSR data, just log the error but don't show to user
+          console.warn('Cache initialization failed, but displaying server-side data');
+          setCacheLoaded(false); // Mark cache as not loaded, will use SSR data
+        }
       } finally {
         setIsSearching(false);
       }

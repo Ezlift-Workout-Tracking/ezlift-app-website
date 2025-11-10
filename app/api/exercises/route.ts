@@ -40,7 +40,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Validate pagination parameters
-    if (page < 1 || limit < 1 || limit > 100) {
+    // Allow up to 2000 for cache loading, but recommend smaller pages for regular use
+    if (page < 1 || limit < 1 || limit > 2000) {
       return NextResponse.json(
         { error: 'Invalid pagination parameters' },
         { status: 400 }
