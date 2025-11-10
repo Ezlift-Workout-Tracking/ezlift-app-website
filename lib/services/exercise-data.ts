@@ -105,12 +105,16 @@ class ExerciseDataService {
         }
 
         if (getMultipleExerciseContents) {
+          console.log(`[ExerciseData] Fetching Contentful content for ${exerciseIds.length} exercises`);
           promises.push(getMultipleExerciseContents(exerciseIds));
         } else {
+          console.log('[ExerciseData] Contentful service not available, skipping content loading');
           promises.push(Promise.resolve(new Map()));
         }
 
         const [mediaMap, contentMap] = await Promise.all(promises);
+        
+        console.log(`[ExerciseData] Received ${contentMap.size} Contentful entries`);
 
         // Enhance exercises with external data
         exercises.forEach(exercise => {
