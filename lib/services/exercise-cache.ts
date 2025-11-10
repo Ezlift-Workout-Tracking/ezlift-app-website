@@ -18,7 +18,6 @@ class ExerciseCacheService {
 
     // If already loaded and not expired, use cache
     if (store.isLoaded && !store.isExpired() && exerciseSearch.isInitialized()) {
-      console.log('[ExerciseCache] Using cached exercises:', store.exercises.length);
       return;
     }
 
@@ -28,7 +27,6 @@ class ExerciseCacheService {
     }
 
     // Start fresh load
-    console.log('[ExerciseCache] Loading all exercises from API...');
     store.setLoading(true);
 
     this.loadPromise = (async () => {
@@ -59,15 +57,11 @@ class ExerciseCacheService {
           filterOptions = await filterResponse.json();
         }
 
-        console.log(`[ExerciseCache] Loaded ${data.exercises.length} exercises`);
-
         // Store in Zustand cache
         store.setExercises(data.exercises, filterOptions);
 
         // Initialize search engine
         exerciseSearch.initialize(data.exercises);
-
-        console.log('[ExerciseCache] Cache and search engine initialized');
       } catch (error) {
         console.error('[ExerciseCache] Error loading exercises:', error);
         store.setError(error instanceof Error ? error.message : 'Failed to load exercises');

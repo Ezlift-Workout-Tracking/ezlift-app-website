@@ -41,7 +41,6 @@ export default function ExerciseCard({ exercise }: ExerciseCardProps) {
             }
           } catch (error) {
             // Silently fail - just use database name
-            console.debug('No Contentful data for exercise:', exercise.id);
           }
         };
         
