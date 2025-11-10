@@ -11,10 +11,6 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || EXERCISE_LIBRARY_PAGE_SIZE.toString());
     
-    console.log(`\n🌐 ========================================`);
-    console.log(`🌐 API /exercises called: page=${page}, limit=${limit}`);
-    console.log(`🌐 ========================================\n`);
-    
     // Build filters from search params
     const filters: ExerciseFilters = {};
     
@@ -54,22 +50,6 @@ export async function GET(request: NextRequest) {
 
     // Fetch exercises
     const result = await exerciseDataService.getExercises(filters, page, limit);
-    
-    // Log Contentful data stats (server-side)
-    const withContent = result.exercises.filter(ex => ex.content).length;
-    const withSlugs = result.exercises.filter(ex => ex.content?.slug).length;
-    const withTitles = result.exercises.filter(ex => ex.content?.title).length;
-    console.log(`[API /exercises] Returning ${result.exercises.length} exercises: ${withContent} with content (${withSlugs} slugs, ${withTitles} titles)`);
-    
-    if (withContent > 0) {
-      const sample = result.exercises.find(ex => ex.content?.slug);
-      console.log(`[API /exercises] Sample:`, {
-        id: sample?.id,
-        name: sample?.name,
-        contentTitle: sample?.content?.title,
-        contentSlug: sample?.content?.slug,
-      });
-    }
     
     // Return the result
     return NextResponse.json(result);

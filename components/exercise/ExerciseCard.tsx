@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Dumbbell } from "lucide-react";
+import { useState, useEffect } from "react";
 import type { Exercise } from "@/types/exercise";
 
 interface ExerciseCardProps {
@@ -14,12 +15,45 @@ export default function ExerciseCard({ exercise }: ExerciseCardProps) {
   const imageUrl = exercise.media?.imageUrl || '';
   const hasImage = Boolean(imageUrl && exercise.media?.imageExists);
   
+  // Check if exercise already has Contentful data (from SSR or previous fetch)
+  const [contentfulData, setContentfulData] = useState<{ title?: string; slug?: string } | null>(
+    exercise.content ? { title: exercise.content.title, slug: exercise.content.slug } : null
+  );
+  
+  useEffect(() => {
+    // If we don't have Contentful data yet and exercise doesn't have content, try to fetch it
+    if (!contentfulData && !exercise.content) {
+      let isMounted = true;
+      
+      const fetchContentfulData = async () => {
+        try {
+          const response = await fetch(`/api/exercises/${exercise.id}/content`);
+          if (response.ok) {
+            const data = await response.json();
+            if (isMounted && data) {
+              setContentfulData({ title: data.title, slug: data.slug });
+            }
+          }
+        } catch (error) {
+          // Silently fail - just use database name
+          console.debug('No Contentful data for exercise:', exercise.id);
+        }
+      };
+      
+      fetchContentfulData();
+      
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [exercise.id, exercise.content, contentfulData]);
+  
   // Use Contentful title if available, otherwise fallback to database name
-  const displayTitle = exercise.content?.title || exercise.name;
+  const displayTitle = contentfulData?.title || exercise.content?.title || exercise.name;
   
   // Use Contentful slug if available, otherwise fallback to database ID
-  const linkUrl = exercise.content?.slug 
-    ? `/exercise-library/${exercise.content.slug}` 
+  const linkUrl = contentfulData?.slug || exercise.content?.slug
+    ? `/exercise-library/${contentfulData?.slug || exercise.content?.slug}` 
     : `/exercise-library/${exercise.id}`;
 
   return (
