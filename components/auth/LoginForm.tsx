@@ -366,7 +366,7 @@ export function LoginForm() {
 
           <Button 
             type="submit" 
-            className="w-full h-12 bg-brand-orange hover:bg-[#E55F00] text-black font-semibold rounded-input"
+            className="w-full h-12 bg-brand-orange hover:bg-[#E55F00] text-grayscale-800 font-semibold rounded-input"
             disabled={isLoading || !watch("email") || !watch("password")}
           >
             {isLoading ? "Signing in..." : "Login"}

@@ -363,7 +363,8 @@ export function ProgressChartCard() {
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #DFE1E6', borderRadius: 8 }}
                     formatter={(value: number, name: string) => {
                       const labelMap: Record<string,string> = { est: 'Est. 1RM', max: 'Max weight', total: 'Total weight' };
-                      return [`${value} ${unitLabel}`, labelMap[name] || name];
+                      const roundedValue = typeof value === 'number' ? value.toFixed(2) : value;
+                      return [`${roundedValue} ${unitLabel}`, labelMap[name] || name];
                     }}
                     labelFormatter={(label) => {
                       const dt = new Date(label as any);
@@ -403,7 +404,7 @@ export function ProgressChartCard() {
                 <div>
                   <p className="text-xs text-muted-foreground">Starting</p>
                   <p className="text-base font-medium text-text-secondary">
-                    {toUnit(stats.start).toFixed(1)} {unitLabel}
+                    {toUnit(stats.start).toFixed(2)} {unitLabel}
                     {primaryDates.startDate ? (
                       <span className="text-xs text-muted-foreground"> ({format(primaryDates.startDate, 'MMM d')})</span>
                     ) : null}
@@ -411,12 +412,12 @@ export function ProgressChartCard() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Current</p>
-                  <p className="text-base font-semibold text-text-primary">{toUnit(stats.current).toFixed(1)} {unitLabel}</p>
+                  <p className="text-base font-semibold text-text-primary">{toUnit(stats.current).toFixed(2)} {unitLabel}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Progress</p>
                   <p className={`text-base font-medium ${stats.changeAbs > 0 ? 'text-success-green' : stats.changeAbs < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                    {stats.changeAbs >= 0 ? '+' : ''}{toUnit(stats.changeAbs).toFixed(1)} {unitLabel} {stats.changePct ? `(${stats.changePct >= 0 ? '+' : ''}${stats.changePct.toFixed(1)}%)` : ''}
+                    {stats.changeAbs >= 0 ? '+' : ''}{toUnit(stats.changeAbs).toFixed(2)} {unitLabel} {stats.changePct ? `(${stats.changePct >= 0 ? '+' : ''}${stats.changePct.toFixed(1)}%)` : ''}
                   </p>
                 </div>
               </div>

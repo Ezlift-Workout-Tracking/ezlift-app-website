@@ -242,3 +242,4 @@ See implementation guide: `PHASE-1-IMPLEMENTATION-GUIDE.md`
 
 **TL;DR**: Exercise Library is slow because we're making 30-45 API calls on every request with no caching. Phase 1 optimizations (1-2 days work) will make it **60-70% faster** with minimal risk.
 
+

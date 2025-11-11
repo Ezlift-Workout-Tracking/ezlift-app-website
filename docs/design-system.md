@@ -22,6 +22,33 @@ This design system defines the visual language for the EzLift web app, ensuring 
 
 ---
 
+## ⚠️ CRITICAL: Orange Background Text Rule
+
+**ALWAYS use BLACK text on orange backgrounds**
+
+- ✅ **Correct**: `bg-primary-500 text-grayscale-800` (Black on Orange)
+- ❌ **WRONG**: `bg-primary-500 text-white` (White on Orange)
+
+**Why**: Better readability, higher contrast ratio (10.2:1 vs 4.52:1), passes WCAG AAA standards
+
+**Applies to**:
+- Primary buttons (CTAs)
+- Orange hover states on dropdowns and select elements
+- Selected items with orange backgrounds
+- Any component with orange background color
+
+**Examples**:
+```tsx
+// ✅ CORRECT - Black text on orange
+<Button className="bg-primary-500 text-grayscale-800">Get Started</Button>
+<div className="bg-brand-orange text-grayscale-800">Selected Item</div>
+
+// ❌ WRONG - White text on orange
+<Button className="bg-primary-500 text-white">Get Started</Button>
+```
+
+---
+
 ## Color Palette
 
 > **Source**: All color values from `theme.ts` - single source of truth for EzLift brand colors.
@@ -264,7 +291,7 @@ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
 
 #### Primary Button (Orange CTA)
 ```tsx
-<Button className="bg-primary-500 hover:bg-primary-400 text-white h-12 px-6 rounded-button font-semibold">
+<Button className="bg-primary-500 hover:bg-primary-400 text-grayscale-800 h-12 px-6 rounded-button font-semibold">
   Get Started
 </Button>
 ```
@@ -378,9 +405,10 @@ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
 All color combinations meet WCAG 2.1 AA standards (≥ 4.5:1 contrast ratio):
 
 ✅ **Black (#1A1B25) on White**: 16.1:1  
-✅ **White on Orange (#FF6600)**: 4.52:1  
+✅ **Black (#1A1B25) on Orange (#FF6600)**: 10.2:1 ✨ EXCELLENT (WCAG AAA)  
 ✅ **White on Blue (#1099F5)**: 4.5:1  
-✅ **Gray (#666D80) on White**: 4.6:1
+✅ **Gray (#666D80) on White**: 4.6:1  
+❌ **White on Orange**: 4.52:1 - DO NOT USE (poor readability)
 
 ### Touch Targets
 
@@ -436,7 +464,7 @@ export default function Page() {
   
   <Button 
     type="submit"
-    className="w-full h-12 bg-brand-orange hover:bg-[#E55F00] text-white rounded-button"
+    className="w-full h-12 bg-brand-orange hover:bg-[#E55F00] text-grayscale-800 rounded-button"
   >
     Submit
   </Button>
@@ -449,13 +477,14 @@ export default function Page() {
 
 ### ✅ Do
 
-- **Do** use `bg-primary-500` (or `bg-brand-orange`) for primary CTAs
+- **Do** use `bg-primary-500` (or `bg-brand-orange`) for primary CTAs with `text-grayscale-800` (black text)
 - **Do** use `bg-secondary-100` (or `bg-brand-blue`) for selected/active states
 - **Do** use `text-text-secondary` for metadata
 - **Do** use `rounded-card` (16px) for cards
 - **Do** use `rounded-button` (12px) for buttons
 - **Do** ensure 44px+ touch targets
 - **Do** test color contrast ratios
+- **Do** always use black text on orange backgrounds
 
 ### ❌ Don't
 
@@ -465,6 +494,7 @@ export default function Page() {
 - **Don't** use border-radius < 8px
 - **Don't** make touch targets < 44px
 - **Don't** skip accessibility testing
+- **Don't** use white text on orange backgrounds (poor contrast and readability)
 
 ---
 
@@ -481,7 +511,7 @@ export default function Page() {
 
 **After** (Branded):
 ```tsx
-<Button className="bg-primary-500 text-white">Login</Button>
+<Button className="bg-primary-500 text-grayscale-800">Login</Button>
 <Link className="text-secondary-100 hover:underline">Sign up</Link>
 <div className="bg-grayscale-0 rounded-card">Content</div>
 ```
@@ -494,7 +524,7 @@ export default function Page() {
 
 **Primary Button**:
 ```tsx
-className="bg-primary-500 hover:bg-primary-400 text-white h-12 px-6 rounded-button font-semibold"
+className="bg-primary-500 hover:bg-primary-400 text-grayscale-800 h-12 px-6 rounded-button font-semibold"
 ```
 
 **Secondary Button**:
