@@ -1,6 +1,8 @@
+import { unstable_cache } from 'next/cache';
 import databaseService from './database';
 import { isS3Configured, isContentfulConfigured } from '../config/environment';
 import { DEFAULT_PAGE_SIZE } from '../constants/pagination';
+import { PerformanceTracker } from '../utils/performance';
 import {
   Exercise,
   ExerciseFilters,
@@ -50,20 +52,147 @@ if (isContentfulConfigured()) {
 
 class ExerciseDataService {
   // Get exercises with all data sources combined
+  // OPTIMIZED: Added Next.js data cache and performance tracking
   async getExercises(
     filters: ExerciseFilters = {},
     page: number = 1,
     limit: number = DEFAULT_PAGE_SIZE
   ): Promise<ExerciseListResponse> {
+    // Check if we're in a Next.js context (has incremental cache)
+    // Standalone scripts (like sitemap generation) don't have this
+    const isNextJsContext = typeof process !== 'undefined' && 
+                           process.env.NEXT_RUNTIME !== undefined;
+    
+    // If not in Next.js context, bypass cache
+    if (!isNextJsContext) {
+      return await this._getExercisesUncached(filters, page, limit);
+    }
+    
+    // Create deterministic cache key from inputs
+    const cacheKey = `exercises-${JSON.stringify(filters)}-${page}-${limit}`;
+    
+    // Wrap in unstable_cache for automatic deduplication and caching
+    // This dramatically reduces repeated database and API calls
     try {
-      // Fetch exercises from database (always available)
-      const { exercises: dbExercises, total } = await databaseService.getExercises(
-        filters,
-        page,
-        limit
+      const getCachedData = unstable_cache(
+        async () => {
+          return await this._getExercisesUncached(filters, page, limit);
+        },
+        [cacheKey],
+        {
+          revalidate: 3600, // Revalidate every hour
+          tags: ['exercises', `page-${page}`]
+        }
       );
+      
+      return await getCachedData();
+    } catch (error) {
+      // Fallback to uncached if cache fails (e.g., in scripts)
+      console.warn('Cache unavailable, using direct fetch:', error);
+      return await this._getExercisesUncached(filters, page, limit);
+    }
+  }
 
-      if (dbExercises.length === 0) {
+  // Internal method: Fetch exercises without caching
+  // This is wrapped by the cached version above
+  private async _getExercisesUncached(
+    filters: ExerciseFilters = {},
+    page: number = 1,
+    limit: number = DEFAULT_PAGE_SIZE
+  ): Promise<ExerciseListResponse> {
+    return PerformanceTracker.measure('getExercises:total', async () => {
+      try {
+        // Fetch exercises from database (always available)
+        const { exercises: dbExercises, total } = await PerformanceTracker.measure(
+          'getExercises:database',
+          () => databaseService.getExercises(filters, page, limit)
+        );
+
+        if (dbExercises.length === 0) {
+          return {
+            exercises: [],
+            total: 0,
+            page,
+            limit,
+          };
+        }
+
+        // Convert database exercises to Exercise type
+        const exercises: Exercise[] = dbExercises.map(dbExercise => {
+          const exercise: Exercise = {
+            ...dbExercise,
+          };
+
+          // Add media placeholder if S3 is not configured
+          if (!s3Service) {
+            exercise.media = {
+              imageUrl: null,
+              videoUrl: null,
+              imageExists: false,
+              videoExists: false,
+            };
+          }
+
+          return exercise;
+        });
+
+        // Optionally fetch external data if services are available
+        if (s3Service || getMultipleExerciseContents) {
+          const exerciseIds = dbExercises.map(exercise => exercise.id);
+          
+          // Fetch media and content in parallel with performance tracking
+          const [mediaMap, contentMap] = await Promise.all([
+            PerformanceTracker.measure(
+              `getExercises:s3 (${exerciseIds.length} exercises)`,
+              () => s3Service 
+                ? s3Service.getMultipleExerciseMedia(exerciseIds)
+                : Promise.resolve(new Map())
+            ) as Promise<Map<string, any>>,
+            PerformanceTracker.measure(
+              `getExercises:contentful (${exerciseIds.length} exercises)`,
+              () => getMultipleExerciseContents
+                ? getMultipleExerciseContents(exerciseIds)
+                : Promise.resolve(new Map())
+            ) as Promise<Map<string, any>>,
+          ]);
+
+          // Enhance exercises with external data
+          PerformanceTracker.start('getExercises:enhance');
+          exercises.forEach(exercise => {
+            if (s3Service && mediaMap.has(exercise.id)) {
+              exercise.media = mediaMap.get(exercise.id);
+            }
+
+            if (getMultipleExerciseContents && contentMap.has(exercise.id)) {
+              const contentfulContent = contentMap.get(exercise.id);
+              exercise.content = {
+                id: contentfulContent.id,
+                exercise_id: contentfulContent.exercise_id,
+                title: contentfulContent.title,
+                slug: contentfulContent.slug,
+                rich_content: contentfulContent.rich_content,
+                cover_image: contentfulContent.cover_image,
+                seo_title: contentfulContent.seo_title,
+                seo_description: contentfulContent.seo_description,
+                author: contentfulContent.author,
+                published: contentfulContent.published,
+                createdAt: contentfulContent.createdAt,
+                updatedAt: contentfulContent.updatedAt,
+              };
+            }
+          });
+          PerformanceTracker.end('getExercises:enhance');
+        }
+
+        return {
+          exercises,
+          total,
+          page,
+          limit,
+        };
+      } catch (error) {
+        console.error('Error fetching exercises:', error);
+        console.log('⚠️ Database unavailable, returning empty results');
         return {
           exercises: [],
           total: 0,
@@ -71,89 +200,7 @@ class ExerciseDataService {
           limit,
         };
       }
-
-      // Convert database exercises to Exercise type
-      const exercises: Exercise[] = dbExercises.map(dbExercise => {
-        const exercise: Exercise = {
-          ...dbExercise,
-        };
-
-        // Add media placeholder if S3 is not configured
-        if (!s3Service) {
-          exercise.media = {
-            imageUrl: null,
-            videoUrl: null,
-            imageExists: false,
-            videoExists: false,
-          };
-        }
-
-        return exercise;
-      });
-
-      // Optionally fetch external data if services are available
-      if (s3Service || getMultipleExerciseContents) {
-        const exerciseIds = dbExercises.map(exercise => exercise.id);
-        
-        // Fetch media and content in parallel if available
-        const promises: Promise<any>[] = [];
-        
-        if (s3Service) {
-          promises.push(s3Service.getMultipleExerciseMedia(exerciseIds));
-        } else {
-          promises.push(Promise.resolve(new Map()));
-        }
-
-        if (getMultipleExerciseContents) {
-          promises.push(getMultipleExerciseContents(exerciseIds));
-        } else {
-          promises.push(Promise.resolve(new Map()));
-        }
-
-        const [mediaMap, contentMap] = await Promise.all(promises);
-
-        // Enhance exercises with external data
-        exercises.forEach(exercise => {
-          if (s3Service && mediaMap.has(exercise.id)) {
-            exercise.media = mediaMap.get(exercise.id);
-          }
-
-          if (getMultipleExerciseContents && contentMap.has(exercise.id)) {
-            const contentfulContent = contentMap.get(exercise.id);
-            exercise.content = {
-              id: contentfulContent.id,
-              exercise_id: contentfulContent.exercise_id,
-              title: contentfulContent.title,
-              slug: contentfulContent.slug,
-              rich_content: contentfulContent.rich_content,
-              cover_image: contentfulContent.cover_image,
-              seo_title: contentfulContent.seo_title,
-              seo_description: contentfulContent.seo_description,
-              author: contentfulContent.author,
-              published: contentfulContent.published,
-              createdAt: contentfulContent.createdAt,
-              updatedAt: contentfulContent.updatedAt,
-            };
-          }
-        });
-      }
-
-      return {
-        exercises,
-        total,
-        page,
-        limit,
-      };
-    } catch (error) {
-      console.error('Error fetching exercises:', error);
-      console.log('⚠️ Database unavailable, returning empty results');
-      return {
-        exercises: [],
-        total: 0,
-        page,
-        limit,
-      };
-    }
+    });
   }
 
   // Get single exercise by ID with all data sources

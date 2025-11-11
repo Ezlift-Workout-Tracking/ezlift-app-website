@@ -1,26 +1,48 @@
 import fs from 'fs';
 import path from 'path';
 import { getAllBlogPostSlugs } from './contentful';
-import exerciseDataService from './services/exercise-data';
+import databaseService from './services/database';
 import { EXERCISE_LIBRARY_PAGE_SIZE } from './constants/pagination';
 
 const generateSitemap = async () => {
+    // Set a global timeout for the entire sitemap generation
+    const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Sitemap generation timeout')), 30000); // 30 second timeout
+    });
+
+    try {
+        await Promise.race([generateSitemapInternal(), timeoutPromise]);
+    } catch (error) {
+        console.error('Sitemap generation failed:', error);
+        // Generate minimal sitemap on error
+        generateMinimalSitemap();
+    } finally {
+        // Force exit after sitemap generation to prevent hanging
+        process.exit(0);
+    }
+};
+
+const generateSitemapInternal = async () => {
     let blogSlugs: string[] = [];
     try {
-        blogSlugs = await getAllBlogPostSlugs();
+        // Add timeout for Contentful fetch
+        const contentfulPromise = getAllBlogPostSlugs();
+        const timeoutPromise = new Promise<string[]>((resolve) => {
+            setTimeout(() => resolve([]), 5000); // 5 second timeout
+        });
+        blogSlugs = await Promise.race([contentfulPromise, timeoutPromise]);
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.warn('Could not fetch blog slugs from Contentful:', errorMessage);
-        // Fallback to empty array if Contentful is not available during build
         blogSlugs = [];
     }
 
     // Get exercise library pagination info
     let exerciseLibraryUrls: Array<{ url: string; lastModified: string; changeFrequency: string; priority: number }> = [];
     try {
-        // Get total exercise count to calculate pages
-        const exerciseResponse = await exerciseDataService.getExercises({}, 1, 1);
-        const totalExercises = exerciseResponse?.total || 0;
+        // Use database service directly to avoid S3/Contentful overhead
+        // This is much faster for sitemap generation
+        const { total: totalExercises } = await databaseService.getExercises({}, 1, 1);
         const totalPages = Math.ceil(totalExercises / EXERCISE_LIBRARY_PAGE_SIZE);
         
         // Add main exercise library page
@@ -133,4 +155,72 @@ const generateSitemap = async () => {
     console.log('Sitemap generated with', allUrls.length, 'URLs!');
 };
 
-generateSitemap().catch(console.error);
+// Fallback minimal sitemap if generation fails
+const generateMinimalSitemap = () => {
+    console.warn('Generating minimal sitemap due to errors...');
+    
+    const minimalUrls = [
+        {
+            url: 'https://ezlift.app',
+            lastModified: new Date().toISOString(),
+            changeFrequency: 'yearly',
+            priority: 1,
+        },
+        {
+            url: 'https://ezlift.app/exercise-library',
+            lastModified: new Date().toISOString(),
+            changeFrequency: 'weekly',
+            priority: 0.9,
+        },
+        {
+            url: 'https://ezlift.app/contact',
+            lastModified: new Date().toISOString(),
+            changeFrequency: 'yearly',
+            priority: 0.3,
+        },
+        {
+            url: 'https://ezlift.app/privacy',
+            lastModified: new Date().toISOString(),
+            changeFrequency: 'yearly',
+            priority: 0.8,
+        },
+        {
+            url: 'https://ezlift.app/terms',
+            lastModified: new Date().toISOString(),
+            changeFrequency: 'yearly',
+            priority: 0.8,
+        },
+        {
+            url: 'https://ezlift.app/blog',
+            lastModified: new Date().toISOString(),
+            changeFrequency: 'weekly',
+            priority: 0.9,
+        },
+        {
+            url: 'https://ezlift.app/about',
+            lastModified: new Date().toISOString(),
+            changeFrequency: 'yearly',
+            priority: 0.8,
+        },
+    ];
+
+    const sitemapXML = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    ${minimalUrls
+            .map(
+                (url) => `
+    <url>
+        <loc>${url.url}</loc>
+        <lastmod>${url.lastModified}</lastmod>
+        <changefreq>${url.changeFrequency}</changefreq>
+        <priority>${url.priority}</priority>
+    </url>`
+            )
+            .join('')}
+</urlset>`;
+
+    fs.writeFileSync(path.join(__dirname, '../public/sitemap.xml'), sitemapXML, 'utf8');
+    console.log('Minimal sitemap generated with', minimalUrls.length, 'URLs!');
+};
+
+generateSitemap();

@@ -284,6 +284,63 @@ export async function getBlogPostBySlugPreview(slug: string): Promise<BlogPost |
 
 // Updated: Exercise-specific Contentful functions
 
+// OPTIMIZATION: In-memory caches to reduce Contentful API calls
+// These persist across requests in serverless environments
+const contentfulPositiveCache = new Map<string, ExerciseContent>();
+const contentfulNegativeCache = new Set<string>();
+const cacheTimestamps = new Map<string, number>();
+
+// Cache TTL: 1 hour (3600 seconds)
+const CACHE_TTL = 3600 * 1000;
+
+// Helper to check if cache entry is still valid
+function isCacheValid(id: string): boolean {
+  const timestamp = cacheTimestamps.get(id);
+  if (!timestamp) return false;
+  return Date.now() - timestamp < CACHE_TTL;
+}
+
+// Optional: Get cache statistics (useful for debugging)
+export function getContentfulCacheStats() {
+  return {
+    positiveCacheSize: contentfulPositiveCache.size,
+    negativeCacheSize: contentfulNegativeCache.size,
+    totalCached: contentfulPositiveCache.size + contentfulNegativeCache.size,
+  };
+}
+
+// Cache cleanup to prevent memory leaks in long-running processes
+function cleanupCache() {
+  const now = Date.now();
+  let cleanedCount = 0;
+  
+  // Remove expired positive cache entries
+  contentfulPositiveCache.forEach((_, id) => {
+    if (!isCacheValid(id)) {
+      contentfulPositiveCache.delete(id);
+      cleanedCount++;
+    }
+  });
+  
+  // Remove expired negative cache entries
+  contentfulNegativeCache.forEach(id => {
+    if (!isCacheValid(id)) {
+      contentfulNegativeCache.delete(id);
+      cacheTimestamps.delete(id);
+      cleanedCount++;
+    }
+  });
+  
+  if (cleanedCount > 0 && process.env.NODE_ENV === 'development') {
+    console.log(`[Contentful Cache] Cleaned up ${cleanedCount} expired entries`);
+  }
+}
+
+// Run cleanup every 10 minutes in server environments
+if (typeof setInterval !== 'undefined') {
+  setInterval(cleanupCache, 10 * 60 * 1000);
+}
+
 // Fetch exercise content by database exercise ID
 export async function getExerciseContentByExerciseId(exerciseId: string): Promise<ExerciseContent | null> {
   try {
@@ -306,26 +363,81 @@ export async function getExerciseContentByExerciseId(exerciseId: string): Promis
 }
 
 // Fetch multiple exercise contents by database exercise IDs
+// OPTIMIZED: Uses in-memory caching to dramatically reduce API calls
 export async function getMultipleExerciseContents(exerciseIds: string[]): Promise<Map<string, ExerciseContent>> {
   const contentMap = new Map<string, ExerciseContent>();
+  const now = Date.now();
   
   if (exerciseIds.length === 0) {
     return contentMap;
   }
 
+  // Step 1: Check caches and filter out what we already know
+  const uncachedIds: string[] = [];
+  
+  exerciseIds.forEach(id => {
+    // Return cached positive results immediately
+    if (isCacheValid(id) && contentfulPositiveCache.has(id)) {
+      const cached = contentfulPositiveCache.get(id)!;
+      contentMap.set(id, cached);
+      return;
+    }
+    
+    // Skip known negatives (exercises without Contentful content)
+    // This prevents redundant API calls for exercises we know don't have content
+    if (isCacheValid(id) && contentfulNegativeCache.has(id)) {
+      return;
+    }
+    
+    // This ID needs to be fetched
+    uncachedIds.push(id);
+  });
+  
+  // Step 2: If everything was cached, return immediately
+  if (uncachedIds.length === 0) {
+    console.log(`[Contentful Cache] 100% hit rate (${exerciseIds.length} exercises)`);
+    return contentMap;
+  }
+  
+  console.log(`[Contentful Cache] Fetching ${uncachedIds.length}/${exerciseIds.length} exercises (${((1 - uncachedIds.length / exerciseIds.length) * 100).toFixed(1)}% cache hit rate)`);
+  
+  // Step 3: Fetch uncached IDs from Contentful
   try {
     const response = await client.getEntries<any>({
       content_type: 'exercise',
-      'fields.id[in]': exerciseIds.join(','), // Maps to database exercise IDs
+      'fields.id[in]': uncachedIds.join(','),
       include: 10,
-      limit: 1000, // Adjust based on your needs
+      limit: 1000,
     });
-
+    
+    const foundIds = new Set<string>();
+    
+    // Step 4: Cache positive results (exercises with Contentful content)
     response.items.forEach((item: any) => {
       const content = transformExerciseContent(item);
+      
+      // Add to response
       contentMap.set(content.exercise_id, content);
+      
+      // Cache for future requests
+      contentfulPositiveCache.set(content.exercise_id, content);
+      cacheTimestamps.set(content.exercise_id, now);
+      foundIds.add(content.exercise_id);
     });
-
+    
+    // Step 5: Cache negative results (exercises without Contentful content)
+    // This is critical - most exercises don't have Contentful entries
+    uncachedIds.forEach(id => {
+      if (!foundIds.has(id)) {
+        contentfulNegativeCache.add(id);
+        cacheTimestamps.set(id, now);
+        // Only log in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[Contentful Cache] Cached negative result for ${id}`);
+        }
+      }
+    });
+    
     return contentMap;
   } catch (error) {
     console.error('Error fetching multiple exercise contents:', error);
