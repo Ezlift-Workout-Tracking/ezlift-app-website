@@ -9,17 +9,30 @@ interface PaginationClientProps {
   currentPage: number;
   totalPages: number;
   filters: Filters;
+  onPageChange?: (page: number) => void; // Optional callback for custom page handling
 }
 
 const PaginationClient: React.FC<PaginationClientProps> = ({
   currentPage,
   totalPages,
   filters,
+  onPageChange,
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  
+  // Get current page from URL to ensure it's always in sync
+  const urlPage = parseInt(searchParams.get('page') || '1');
+  const activePage = urlPage || currentPage;
 
   const navigateToPage = (page: number) => {
+    // If custom callback provided, use it (for cached data)
+    if (onPageChange) {
+      onPageChange(page);
+      return;
+    }
+
+    // Otherwise, use default router navigation
     const params = new URLSearchParams(searchParams);
     
     // Update filter parameters
@@ -68,7 +81,7 @@ const PaginationClient: React.FC<PaginationClientProps> = ({
     const pages = [];
     const maxVisible = 5;
     
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let startPage = Math.max(1, activePage - Math.floor(maxVisible / 2));
     let endPage = Math.min(totalPages, startPage + maxVisible - 1);
     
     if (endPage - startPage + 1 < maxVisible) {
@@ -79,10 +92,10 @@ const PaginationClient: React.FC<PaginationClientProps> = ({
       pages.push(
         <Button
           key={i}
-          variant={i === currentPage ? "default" : "outline"}
+          variant={i === activePage ? "default" : "outline"}
           size="sm"
           onClick={() => navigateToPage(i)}
-          className={i === currentPage ? "bg-gray-800 hover:bg-gray-700 text-white" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"}
+          className={i === activePage ? "bg-grayscale-800 hover:bg-grayscale-700 text-white" : "bg-white border-grayscale-200 text-grayscale-700 hover:bg-grayscale-50 hover:text-grayscale-900"}
         >
           {i}
         </Button>
@@ -93,13 +106,13 @@ const PaginationClient: React.FC<PaginationClientProps> = ({
   };
 
   return (
-    <div className="flex justify-center items-center space-x-2 bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-      {currentPage > 1 && (
+    <div className="flex justify-center items-center space-x-2 bg-white rounded-lg p-4 shadow-sm border border-grayscale-100">
+      {activePage > 1 && (
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={() => navigateToPage(currentPage - 1)}
-          className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+          onClick={() => navigateToPage(activePage - 1)}
+          className="bg-white border-grayscale-200 text-grayscale-700 hover:bg-grayscale-50 hover:text-grayscale-900"
         >
           Previous
         </Button>
@@ -107,12 +120,12 @@ const PaginationClient: React.FC<PaginationClientProps> = ({
       
       {renderPageNumbers()}
       
-      {currentPage < totalPages && (
+      {activePage < totalPages && (
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={() => navigateToPage(currentPage + 1)}
-          className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+          onClick={() => navigateToPage(activePage + 1)}
+          className="bg-white border-grayscale-200 text-grayscale-700 hover:bg-grayscale-50 hover:text-grayscale-900"
         >
           Next
         </Button>

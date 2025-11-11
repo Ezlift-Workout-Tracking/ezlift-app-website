@@ -76,7 +76,9 @@ export function Hero() {
                 />
                 </Link>
                 <Link
-                href="/android"
+                href={BRAND.links.playStore}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="transform transition-transform hover:scale-105 duration-300"
                 aria-label="Get it on Google Play"
                 >

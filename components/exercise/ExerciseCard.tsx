@@ -14,11 +14,9 @@ export default function ExerciseCard({ exercise }: ExerciseCardProps) {
   const imageUrl = exercise.media?.imageUrl || '';
   const hasImage = Boolean(imageUrl && exercise.media?.imageExists);
   
-  // Use Contentful title if available, otherwise fallback to database name
+  // Use Contentful data if available (already batch-fetched by server)
   const displayTitle = exercise.content?.title || exercise.name;
-  
-  // Use Contentful slug if available, otherwise fallback to database ID
-  const linkUrl = exercise.content?.slug 
+  const linkUrl = exercise.content?.slug
     ? `/exercise-library/${exercise.content.slug}` 
     : `/exercise-library/${exercise.id}`;
 

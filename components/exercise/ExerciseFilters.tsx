@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Search, Filter, X } from 'lucide-react';
-import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -19,6 +18,7 @@ import {
   CollapsibleTrigger,
 } from '../ui/collapsible';
 import { ExerciseFilters as Filters, FilterOptions } from '../../types/exercise';
+import DebouncedSearchInput from './DebouncedSearchInput';
 
 interface ExerciseFiltersProps {
   filters: Filters;
@@ -50,10 +50,10 @@ const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
     };
   }, [filterOptions]);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = (searchValue: string) => {
     onFiltersChange({
       ...filters,
-      search: e.target.value,
+      search: searchValue,
     });
   };
 
@@ -151,14 +151,13 @@ const ExerciseFilters: React.FC<ExerciseFiltersProps> = ({
       <CardContent className="space-y-6">
         {/* Search Bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
+          <input
             type="text"
-            placeholder="Search exercises..."
             value={filters.search || ''}
-            onChange={handleSearchChange}
-            className="pl-10 bg-white border-gray-300 focus:border-gray-400 focus:ring-gray-400 text-gray-900 placeholder:text-gray-500"
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Search exercises..."
             disabled={isLoading}
+            className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-brand-blue focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
           />
         </div>
 

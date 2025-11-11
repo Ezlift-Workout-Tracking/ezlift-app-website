@@ -1,5 +1,6 @@
 import databaseService from './database';
 import { isS3Configured, isContentfulConfigured } from '../config/environment';
+import { DEFAULT_PAGE_SIZE } from '../constants/pagination';
 import {
   Exercise,
   ExerciseFilters,
@@ -52,7 +53,7 @@ class ExerciseDataService {
   async getExercises(
     filters: ExerciseFilters = {},
     page: number = 1,
-    limit: number = 20
+    limit: number = DEFAULT_PAGE_SIZE
   ): Promise<ExerciseListResponse> {
     try {
       // Fetch exercises from database (always available)

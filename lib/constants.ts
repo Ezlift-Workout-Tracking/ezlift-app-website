@@ -8,6 +8,7 @@ export const BRAND = {
   },
   links: {
     appStore: 'https://apps.apple.com/de/app/ezlift-pro/id6737275723?l=en-GB',
+    playStore: 'https://play.google.com/store/apps/details?id=com.ezworks.ezlift',
     social: {
       x: 'https://x.com/ezlift_app',
       instagram: 'https://www.instagram.com/ezlift.app',

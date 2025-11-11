@@ -4,14 +4,37 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
-import { Menu, ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { Menu, ArrowLeft, User } from "lucide-react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 
 export function Header({ hideMenu = false, className = "" }: { hideMenu?: boolean; className?: string }) {
   const [open, setOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userInfo, setUserInfo] = useState<any>(null);
   const pathname = usePathname();
+
+  // Check authentication status on mount and on route changes
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/auth/session", { cache: "no-store" });
+        if (!response.ok) {
+          setIsAuthenticated(false);
+          return;
+        }
+        const data = await response.json().catch(() => ({ authenticated: false }));
+        setIsAuthenticated(!!data?.authenticated);
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkAuth();
+  }, [pathname]);
 
   const menuItems = [
     { href: "#features", label: "Features" },
@@ -53,6 +76,21 @@ export function Header({ hideMenu = false, className = "" }: { hideMenu?: boolea
                 <Link href={item.href}>{item.label}</Link>
               </Button>
             ))}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" asChild>
+                  <Link href="/app">
+                    <User className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </Link>
+                </Button>
+                <LogoutButton variant="outline" size="sm" onSuccess={() => setIsAuthenticated(false)} />
+              </div>
+            ) : (
+              <Button variant="default" asChild>
+                <Link href="/login">Login</Link>
+              </Button>
+            )}
           </nav>
         )}
 
@@ -78,6 +116,23 @@ export function Header({ hideMenu = false, className = "" }: { hideMenu?: boolea
                     <Link href={item.href}>{item.label}</Link>
                   </Button>
                 ))}
+                <div className="pt-4 border-t">
+                  {isAuthenticated ? (
+                    <div className="space-y-2">
+                      <Button variant="ghost" className="w-full justify-start" asChild onClick={() => setOpen(false)}>
+                        <Link href="/app">
+                          <User className="mr-2 h-4 w-4" />
+                          Dashboard
+                        </Link>
+                      </Button>
+                      <LogoutButton variant="outline" className="w-full" onSuccess={() => { setOpen(false); setIsAuthenticated(false); }} />
+                    </div>
+                  ) : (
+                    <Button variant="default" className="w-full" asChild onClick={() => setOpen(false)}>
+                      <Link href="/login">Login</Link>
+                    </Button>
+                  )}
+                </div>
               </nav>
             </SheetContent>
           </Sheet>
