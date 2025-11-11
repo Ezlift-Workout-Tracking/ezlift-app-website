@@ -56,3 +56,6 @@ app/sitemap.xml
 *.bak.*
 
 # BMAD (local only)
+:(glob)**/sitemap*.xml
+:(glob)**/sitemap*.xml.gz
+build.log
