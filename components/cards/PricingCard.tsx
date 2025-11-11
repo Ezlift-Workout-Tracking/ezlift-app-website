@@ -3,14 +3,18 @@ import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { PricingPlan } from "@/lib/pricing";
-import Link from "next/link";
-import { BRAND } from "@/lib/constants";
 
-export function PricingCard({ plan }: { plan: PricingPlan }) {
+interface PricingCardProps {
+  plan: PricingPlan;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+export function PricingCard({ plan, isSelected, onSelect }: PricingCardProps) {
   return (
     <Card className={cn(
-      "relative p-6 flex flex-col h-full overflow-hidden",
-      plan.highlight && "border-primary/50 bg-primary/5"
+      "relative p-6 flex flex-col h-full overflow-hidden transition-all duration-300",
+      isSelected && "border-primary/50 bg-primary/5 ring-2 ring-primary/20"
     )}>
       {plan.savings && (
         <div className="absolute -right-12 top-7 rotate-45 bg-brand-primary px-12 py-1 text-xs font-semibold text-white">
@@ -35,19 +39,13 @@ export function PricingCard({ plan }: { plan: PricingPlan }) {
           </div>
         ))}
       </div>
-      <Link 
-        href={BRAND.links.appStore}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-8 block"
+      <Button 
+        onClick={onSelect}
+        className="w-full mt-8" 
+        variant={isSelected ? "default" : "outline"}
       >
-        <Button 
-          className="w-full" 
-          variant={plan.highlight ? "default" : "outline"}
-        >
-          Get Started
-        </Button>
-      </Link>
+        Select Plan
+      </Button>
     </Card>
   );
 }
