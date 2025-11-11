@@ -23,7 +23,7 @@
     
     /* Primary: Brand Orange (#FF6600) */
     --primary: 24 100% 50%;  /* #FF6600 in HSL */
-    --primary-foreground: 0 0% 100%;  /* White */
+    --primary-foreground: 223 16% 11%;  /* grayscale-800 (#1A1B25) - Better contrast (10.2:1) */
     
     /* Secondary: Selection Blue (#1099F5) */
     --secondary: 205 91% 51%;  /* #1099F5 in HSL */
@@ -45,7 +45,7 @@
     
     /* Accent: Brand orange for highlights */
     --accent: 24 100% 50%;  /* #FF6600 */
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 223 16% 11%;  /* grayscale-800 (#1A1B25) - Better contrast */
     
     /* Destructive: Error red (#DF1C41) */
     --destructive: 348 76% 49%;  /* #DF1C41 (alert-error-100) */
@@ -76,13 +76,13 @@
     --popover: 0 0% 100%;
     --popover-foreground: 223 16% 11%;
     --primary: 24 100% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 223 16% 11%;  /* grayscale-800 - Better contrast */
     --secondary: 205 91% 51%;
     --secondary-foreground: 0 0% 100%;
     --muted: 220 33% 97%;
     --muted-foreground: 221 13% 46%;
     --accent: 24 100% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 223 16% 11%;  /* grayscale-800 - Better contrast */
     --destructive: 348 76% 49%;
     --destructive-foreground: 0 0% 98%;
     --border: 220 14% 85%;

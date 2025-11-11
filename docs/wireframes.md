@@ -346,9 +346,9 @@ Based on mobile app screenshots, the complete onboarding flow has **9 total step
 - Same card styling as frequency step
 - Single-select radio buttons
 - Cards: 72px height, white background, gray border
-- Selected state: Blue/orange background (use orange to match mobile Skip button), white text
+- Selected state: Blue/orange background (use orange to match mobile Skip button), **black text** for better readability
 - Timer icon: 24px, left side of each card
-- Next button: Orange (#FF6B2C from mobile app) to match Skip button color
+- Next button: Orange (#FF6600 from mobile app) to match Skip button color, **black text**
 
 ---
 
