@@ -4,6 +4,8 @@ import { Inter, Manrope } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { CookieBanner } from '@/components/cookies/CookieBanner';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
+import { GoogleTagManager } from '@next/third-parties/google'
+
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 const manrope = Manrope({ subsets: ['latin'], display: 'swap' });
@@ -25,6 +27,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+      <GoogleTagManager gtmId="AW-17730299904" />
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
